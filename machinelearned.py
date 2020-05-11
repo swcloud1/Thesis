@@ -39,10 +39,10 @@ def main(args):
 def printResults(results):
     print("Results")
     print("Angry:\t\t{}".format(results["Angry"]))
-    print("Bored:\t\t{}".format(results["Bored"]))
-    print("Excited:\t{}".format(results["Excited"]))
+    # print("Bored:\t\t{}".format(results["Bored"]))
+    # print("Excited:\t{}".format(results["Excited"]))
     print("Fear:\t\t{}".format(results["Fear"]))
-    print("Happy:\t\t{}".format(results["Happy"]))
+    # print("Happy:\t\t{}".format(results["Happy"]))
     print("Sad:\t\t{}".format(results["Sad"]))
 
 if __name__ == "__main__":
