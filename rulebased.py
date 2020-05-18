@@ -13,37 +13,35 @@ from nltk.tokenize import word_tokenize
 import random
 
 debug = 0
-
+intensity_lexicon = []
+# ekman_emotions = [
+# "anger",
+# "disgust",
+# "fear",
+# "joy",
+# "sadness",
+# "surprise"]
 ekman_emotions = [
 "anger",
-"disgust",
 "fear",
-"joy",
-"sadness",
-"surprise"]
+"sadness"]
 
 
 def preprocess(text):
-    input = remove_punctuation(text)
-    input = input.split()
-    if " " not in text:
-        input = [text]
-
-
-    words = []
-
-    ps = PorterStemmer()
-    for word in input:
-        # words.append(ps.stem(word))
-        words.append(word)
-
-
+    # input = remove_punctuation(text)
+    # input = input.split()
+    # if " " not in text:
+    #     input = [text]
+    #
+    #
+    # words = []
+    #
+    # # ps = PorterStemmer()
     # for word in input:
-        # processed_word = adv2adj(word)
-        #andere dingen
-        # words.append(processed_word)
-
-    return words
+    #     words.append(word)
+    tokenized_sentence = nltk.word_tokenize(text)
+    pos_tagged_sentence = nltk.pos_tag(tokenized_sentence)
+    return pos_tagged_sentence
 
 
 def remove_punctuation(text):
@@ -62,73 +60,108 @@ def adv2adj(word):
 
     return word
 
+def load_sentences(amount=-1):
+    sentences = []
+    with open('emo-dataset/val.txt') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=';')
+        for row in csv_reader:
+            if len(sentences) == amount:
+                break
+            sentences.append((row[0],row[1]))
+    return [x for x in sentences if x[1] in ekman_emotions]
 
 
 def main(args):
 
-    input = "I am mad"
-    if args:
-        input = args[0]
-    analyse(input)
+    global intensity_lexicon
 
+    intensity_lexicon = loadIntensityLexicon('emotionintensitylexicon.txt')
+    sentences = load_sentences(amount = 5)
+    length_sentences = len(sentences)
+
+    matches = 0
+    trial = 0
+    prev_percentage = 0
+    cur_percentage = 0
+
+    if not args:
+        for sentence in sentences:
+            print()
+            cur_percentage = int(trial/length_sentences*100)
+            if (cur_percentage % 5 == 0) and (cur_percentage != prev_percentage):
+                print("{}%".format(cur_percentage))
+                prev_percentage = cur_percentage
+            trial+=1
+            input = sentence[0]
+            print("Input: {}".format(input))
+            preprocessed_input = preprocess(input)
+            analysed_sentence = analyse(preprocessed_input)
+            print("RB-Output: {}".format(analysed_sentence.emotions))
+            print("RB-MainEmotion: {}".format(analysed_sentence.getMainEmotion()[0]))
+            # print("VAL-Output: {}".format(sentence[1]))
+            if analysed_sentence.getMainEmotion()[0] == sentence[1]:
+                matches += 1
+            intensified_sentence = intensify(analysed_sentence)
+            print("Output: {}".format(intensified_sentence))
+        # print("\nCorrectness: {}/{} = {}%".format(matches, len(sentences), (matches/len(sentences)*100)))
+
+    else:
+        input = args[0]
+        print("Input: {}".format(input))
+        preprocessed_input = preprocess(input)
+        analysed_sentence = analyse(preprocessed_input)
+        intensified_sentence = intensify(analysed_sentence)
+        print("Output: {}".format(intensified_sentence))
+
+
+def intensify(input):
+    transformer = Transformer()
+    return transformer.intensify(input, "more")
+
+def lessen(input):
+    transformer = Transformer()
+    return transformer.lessen(input, "less")
+
+def loadIntensityLexicon(source):
+    intensity_lexicon = []
+    with open(source) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter='\t')
+        next(csv_reader, None)
+        for row in csv_reader:
+            intensity_lexicon.append((row[0], row[1], float(row[2])))
+
+    return intensity_lexicon
 
 def getemotions(word):
+
+    global intensity_lexicon
+
     emotions = {}
-    with open('emotionintensitylexicon.txt') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter='\t')
-        for row in csv_reader:
-            if row[0] == word.lower():
-                # dbprint(row)
-                emotions[row[1]] = float(row[2])
+    for row in intensity_lexicon:
+        if row[0] == word.lower():
+            emotions[row[1]] = row[2]
+
     return emotions
 
 def analyse(input):
+    analysed_sentence = AnalysedSentence()
 
-    print("Input: {}".format(input))
-    preprocessed_input = preprocess(input)
-    dbprint("Preprocessed input: {}".format(preprocessed_input))
+    for word in input:
+        # print(word)
+        analysedWord = AnalysedWord(word[0], word[1], getemotions(word[0]))
+        analysed_sentence.feed(analysedWord)
 
-    analysedSentence = AnalysedSentence()
+    analysed_sentence.analyseEmotions()
 
-    for word in preprocessed_input:
-        analysedWord = AnalysedWord(word, getemotions(word))
-        analysedSentence.feed(analysedWord)
-
-    analysedSentence.analyseEmotions()
-    analysedSentence.printEmotions()
-
-    transformer = Transformer()
-    transformer.intensify(analysedSentence)
-    # output = {}
-    # for emotion in ekman_emotions:
-    #     output[emotion] = 0.0
-    #
-    #
-    #
-    # for word in text:
-    #     dbprint(word)
-    #     emotions = getemotions(word)
-    #     # emotions = getemotions(word)
-    #     # sentiment = getsentiment(word)
-    #     dbprint(emotions)
-    #     for emotion in emotions:
-    #         if emotion in ekman_emotions:
-    #             output[emotion] += emotions[emotion]
-    #
-    # print("Output: {}".format(output))
-
-def intensify(input):
-    return
-
-def lessen(input):
-    return
+    return analysed_sentence
 
 class AnalysedWord:
 
     hasEmotion = False
 
-    def __init__(self, word, emotions):
+    def __init__(self, word, pos, emotions):
         self.word = word
+        self.pos = pos
         self.emotions = emotions
         if emotions:
             self.hasEmotion = True
@@ -141,17 +174,12 @@ class AnalysedWord:
 
 class AnalysedSentence:
 
-    words = []
-    emotions = {
-        "anger":0.0,
-        "disgust":0.0,
-        "fear":0.0,
-        "joy":0.0,
-        "sadness":0.0,
-        "surprise":0.0
-    }
-
-    hasEmotion = False
+    def __init__(self):
+        self.words = []
+        self.hasEmotion = False
+        self.emotions = {}
+        for emotion in ekman_emotions:
+            self.emotions[emotion] = 0.0
 
     def feed(self, word):
         self.words.append(word)
@@ -161,29 +189,33 @@ class AnalysedSentence:
     def analyseEmotions(self):
         for word in self.words:
             for emotion in word.emotions:
-                self.emotions[emotion] += word.emotions[emotion]
+                if emotion in self.emotions:
+                    self.emotions[emotion] += word.emotions[emotion]
         return self.emotions
 
-    def printEmotions(self):
-        print(self.emotions)
+    # def printEmotions(self):
+    #     print(self.emotions)
 
     def getMainEmotion(self):
         emotion = max(self.emotions, key=self.emotions.get)
         value = max(self.emotions.values())
-        return (emotion,value)
-
+        if value > 0:
+            return (emotion,value)
+        else:
+            return (None, value)
 
 class Transformer:
 
-    # def __init__(self)
-
-    def intensify(self, sentence):
+    def intensify(self, sentence, direction):
         # mainEmotion = sentence.getMainEmotion()
         output = []
         replacements = {}
         contributingWords = self.getContributingWords(sentence)
         for word in contributingWords:
-            replacements[word.word] = self.getIntenserWord(word)
+            if direction == "more":
+                replacements[word.word] = self.getMoreIntenseWord(word)
+            if direction == "less":
+                replacements[word.word] = self.getLessIntenseWord(word)
 
         for word in sentence.words:
             if word.word in replacements:
@@ -191,7 +223,8 @@ class Transformer:
             else:
                 output.append(word.word)
 
-        print("output: {}".format(' '.join(output)))
+        return "{}".format(' '.join(output))
+
 
 
     def getContributingWords(self, sentence):
@@ -203,60 +236,33 @@ class Transformer:
 
         return contributingWords
 
-    def getIntenserWord(self, word):
+    def getLessIntenseWord(self, word):
         intenserWords = []
         emotion = word.getMainEmotion()
         with open('emotionintensitylexicon.txt') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter='\t')
             for row in csv_reader:
                 if row[1] == emotion[0]:
-                    if float(row[2]) > emotion[1]:
+                    if float(row[2]) < emotion[1]:
                         intenserWords.append(row[0])
+        word_type = nltk.pos_tag([word.word])
         tagged_intenser_words = nltk.pos_tag(intenserWords)
-        interserMatchingWords = [word for word in tagged_intenser_words if word[1] == "JJ"]
+        interserMatchingWords = [word for word in tagged_intenser_words if word[1] == word_type[0][1]]
         return random.choice(interserMatchingWords)[0]
 
 
-
-
-    # def __init__(self, words):
-    #     self.words = words
-# def getsentiment(word):
-#     positive = 0
-#     negative = 0
-#     hits = 0
-#     with open('sentiwordnet.csv') as csv_file:
-#         csv_reader = csv.reader(csv_file, delimiter='\t')
-#         for row in csv_reader:
-#             row_word = row[3].split('#')[0]
-#             if row_word == word:
-#                 dbprint(row)
-#                 hits += 1
-#                 positive += float(row[1])
-#                 negative += float(row[2])
-#
-#     if positive > negative and positive != 0:
-#         return round(positive / hits, 3)
-#     if negative > positive and negative != 0:
-#         return round(negative / hits, 3)
-#
-#     return 0.0
-
-
-
-
-
-# def getemotions(word):
-#     emotions = []
-#     with open('emotionlexicon.txt') as csv_file:
-#         csv_reader = csv.reader(csv_file, delimiter='\t')
-#         for row in csv_reader:
-#             if row[0] == word.lower() and row[2] == '1':
-#                 dbprint(row)
-#                 emotions.append(row[1])
-#     return emotions
-
-
+    def getMoreIntenseWord(self, word):
+        intenser_words = []
+        emotion = word.getMainEmotion()
+        with open('emotionintensitylexicon.txt') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter='\t')
+            for row in csv_reader:
+                if row[1] == emotion[0]:
+                    if float(row[2]) > emotion[1]:
+                        intenser_words.append(row[0])
+        tagged_intenser_words = [nltk.pos_tag([x])[0] for x in intenser_words]
+        interserMatchingWords = [intenser_word for intenser_word in tagged_intenser_words if intenser_word[1] == word.pos]
+        return random.choice(interserMatchingWords)[0]
 
 def dbprint(input):
     if debug:
