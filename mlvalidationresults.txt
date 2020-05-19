@@ -1,0 +1,57 @@
+Questions for Adam:
+- Is a validation score of 55% okay to continue, or should I find different way?
+- Can I ask Ana to be the second reader
+- Writing related work before or after all results are in
+
+Sentences [0:50]
+Correctness: 30/50 = 60.0%
+Test Result: {'anger': {'total': 10, 'correct': 3}, 'fear': {'total': 3, 'correct': 2}, 'sadness': {'total': 37, 'correct': 25}}
+
+Sentences [50:100]
+Correctness: 24/50 = 48.0%
+Test Result: {'anger': {'total': 17, 'correct': 3}, 'fear': {'total': 11, 'correct': 5}, 'sadness': {'total': 22, 'correct': 16}}
+
+Sentences [100:150]
+Correctness: 26/50 = 52.0%
+Test Result: {'anger': {'total': 11, 'correct': 5}, 'fear': {'total': 14, 'correct': 5}, 'sadness': {'total': 25, 'correct': 16}}
+
+Sentences [150:200]
+Correctness: 23/50 = 46.0%
+Test Result: {'anger': {'total': 15, 'correct': 6}, 'fear': {'total': 12, 'correct': 2}, 'sadness': {'total': 23, 'correct': 15}}
+
+Sentences [200:250]
+Correctness: 24/50 = 48.0%
+Test Result: {'anger': {'total': 16, 'correct': 4}, 'fear': {'total': 10, 'correct': 3}, 'sadness': {'total': 24, 'correct': 17}}
+
+Sentences [250:300]
+Correctness: 25/50 = 50.0%
+Test Result: {'anger': {'total': 27, 'correct': 5}, 'fear': {'total': 18, 'correct': 6}, 'sadness': {'total': 55, 'correct': 38}}
+
+Sentences [300:350]
+Correctness: 26/50 = 52.0%
+Test Result: {'anger': {'total': 36, 'correct': 9}, 'fear': {'total': 29, 'correct': 8}, 'sadness': {'total': 85, 'correct': 58}}
+
+Sentences [350:400]
+Correctness: 27/50 = 54.0%
+Test Result: {'anger': {'total': 51, 'correct': 13}, 'fear': {'total': 39, 'correct': 12}, 'sadness': {'total': 110, 'correct': 77}}
+
+Sentences [400:450]
+Correctness: 30/50 = 60.0%
+Test Result: {'anger': {'total': 63, 'correct': 19}, 'fear': {'total': 47, 'correct': 15}, 'sadness': {'total': 140, 'correct': 98}}
+
+Sentences [450:500]
+Correctness: 29/50 = 57.99999999999999%
+Test Result: {'anger': {'total': 74, 'correct': 21}, 'fear': {'total': 57, 'correct': 17}, 'sadness': {'total': 169, 'correct': 123}}
+
+Sentences [500:550]
+Correctness: 23/50 = 46.0%
+Test Result: {'anger': {'total': 93, 'correct': 23}, 'fear': {'total': 62, 'correct': 18}, 'sadness': {'total': 195, 'correct': 143}}
+
+Sentences [550:600]
+Correctness: 28/50 = 56.00000000000001%
+Test Result: {'anger': {'total': 107, 'correct': 27}, 'fear': {'total': 72, 'correct': 23}, 'sadness': {'total': 221, 'correct': 162}}
+
+Sentences [600:650]
+Correctness: 29/50 = 57.99999999999999%
+Test Result: {'anger': {'total': 120, 'correct': 33}, 'fear': {'total': 82, 'correct': 28}, 'sadness': {'total': 248, 'correct': 180}}
+

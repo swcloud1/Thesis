@@ -4,9 +4,10 @@ import string
 import nltk
 
 from itertools import chain
-from nltk.corpus import wordnet as wn
+from itertools import product
 from difflib import get_close_matches as gcm
 
+from nltk.corpus import wordnet
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 
@@ -28,17 +29,6 @@ ekman_emotions = [
 
 
 def preprocess(text):
-    # input = remove_punctuation(text)
-    # input = input.split()
-    # if " " not in text:
-    #     input = [text]
-    #
-    #
-    # words = []
-    #
-    # # ps = PorterStemmer()
-    # for word in input:
-    #     words.append(word)
     tokenized_sentence = nltk.word_tokenize(text)
     pos_tagged_sentence = nltk.pos_tag(tokenized_sentence)
     return pos_tagged_sentence
@@ -62,7 +52,7 @@ def adv2adj(word):
 
 def load_sentences(amount=-1):
     sentences = []
-    with open('emo-dataset/val.txt') as csv_file:
+    with open('validationsentences.txt') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=';')
         for row in csv_reader:
             if len(sentences) == amount:
@@ -71,12 +61,22 @@ def load_sentences(amount=-1):
     return [x for x in sentences if x[1] in ekman_emotions]
 
 
+def synonyms(word):
+    synonyms = []
+
+    for syn in wordnet.synsets(word, pos=wordnet.ADJ):
+        for l in syn.lemmas():
+            synonyms.append(l.name())
+
+    print(set(synonyms))
+    return synonyms
+
 def main(args):
 
     global intensity_lexicon
 
     intensity_lexicon = loadIntensityLexicon('emotionintensitylexicon.txt')
-    sentences = load_sentences(amount = 5)
+    sentences = load_sentences(amount = -2)
     length_sentences = len(sentences)
 
     matches = 0
@@ -84,31 +84,47 @@ def main(args):
     prev_percentage = 0
     cur_percentage = 0
 
+    # w1 = wordnet.synset('ship.n.01')
+    # w2 = wordnet.synset('cat.n.01')
+    # print(w1.wup_similarity(w2))
+    #
+
+
+    test_results = {
+        "anger":{"total":0,"correct":0},
+        "fear":{"total":0,"correct":0},
+        "sadness":{"total":0,"correct":0}
+    }
+
     if not args:
         for sentence in sentences:
-            print()
+            # print()
             cur_percentage = int(trial/length_sentences*100)
             if (cur_percentage % 5 == 0) and (cur_percentage != prev_percentage):
                 print("{}%".format(cur_percentage))
                 prev_percentage = cur_percentage
             trial+=1
             input = sentence[0]
-            print("Input: {}".format(input))
+            # print("Input: {}".format(input))
             preprocessed_input = preprocess(input)
             analysed_sentence = analyse(preprocessed_input)
-            print("RB-Output: {}".format(analysed_sentence.emotions))
-            print("RB-MainEmotion: {}".format(analysed_sentence.getMainEmotion()[0]))
+            # print("RB-Output: {}".format(analysed_sentence.emotions))
+            # print("RB-MainEmotion: {}".format(analysed_sentence.getMainEmotion()[0]))
             # print("VAL-Output: {}".format(sentence[1]))
+            test_results[sentence[1]]["total"] += 1
             if analysed_sentence.getMainEmotion()[0] == sentence[1]:
                 matches += 1
-            intensified_sentence = intensify(analysed_sentence)
-            print("Output: {}".format(intensified_sentence))
-        # print("\nCorrectness: {}/{} = {}%".format(matches, len(sentences), (matches/len(sentences)*100)))
+                test_results[sentence[1]]["correct"] += 1
+            # intensified_sentence = intensify(analysed_sentence)
+            # print("Output: {}".format(intensified_sentence))
+        print("\nCorrectness: {}/{} = {}%".format(matches, len(sentences), (matches/len(sentences)*100)))
+        print("Test Result: {}".format(test_results))
 
     else:
         input = args[0]
         print("Input: {}".format(input))
         preprocessed_input = preprocess(input)
+        print(preprocessed_input)
         analysed_sentence = analyse(preprocessed_input)
         intensified_sentence = intensify(analysed_sentence)
         print("Output: {}".format(intensified_sentence))
@@ -252,6 +268,26 @@ class Transformer:
 
 
     def getMoreIntenseWord(self, word):
+
+        posdict = {
+            "VB":wordnet.VERB,
+            "VBD":wordnet.VERB,
+            "VBG":wordnet.VERB,
+            "VBN":wordnet.VERB,
+            "VBP":wordnet.VERB,
+            "VBZ":wordnet.VERB,
+            "NN":wordnet.NOUN,
+            "NNP":wordnet.NOUN,
+            "NNS":wordnet.NOUN,
+            "JJ":wordnet.ADJ,
+            "JJR":wordnet.ADJ,
+            "JJS":wordnet.ADJ,
+            "RB":wordnet.ADV,
+            "RBR":wordnet.ADV,
+            "RBS":wordnet.ADV
+        }
+
+        print("Replacing word {} which is a {}".format(word.word, word.pos))
         intenser_words = []
         emotion = word.getMainEmotion()
         with open('emotionintensitylexicon.txt') as csv_file:
@@ -261,8 +297,45 @@ class Transformer:
                     if float(row[2]) > emotion[1]:
                         intenser_words.append(row[0])
         tagged_intenser_words = [nltk.pos_tag([x])[0] for x in intenser_words]
-        interserMatchingWords = [intenser_word for intenser_word in tagged_intenser_words if intenser_word[1] == word.pos]
-        return random.choice(interserMatchingWords)[0]
+        intenser_matching_words = [intenser_word for intenser_word in tagged_intenser_words if intenser_word[1] == word.pos]
+        # print(intenser_matching_words)
+
+        if word.pos in posdict:
+            source_wordsets = wordnet.synsets(word.word, pos=posdict[word.pos])
+        else:
+            source_wordsets = wordnet.synsets(word.word)
+        print(source_wordsets)
+        results = 0
+
+        highest_score = 0.0
+        best_match = ""
+        for source_wordset in source_wordsets:
+            for matching_word in intenser_matching_words:
+                matching_word_word = matching_word[0]
+                if word.pos in posdict:
+                    matching_wordsets = wordnet.synsets(matching_word_word, pos=posdict[word.pos])
+                else:
+                    matching_wordsets = wordnet.synsets(matching_word_word)
+                for matching_wordset in matching_wordsets:
+                    name = matching_wordset.lemmas()[0].name()
+                    if name == matching_word_word:
+                        similarity = source_wordset.wup_similarity(matching_wordset)
+                        if similarity and similarity > highest_score:
+                            highest_score = similarity
+                            best_match = name
+                            print(matching_wordset.lemmas()[0].name())
+                    results += 1
+
+        print("results {}".format(results))
+
+        if best_match != "":
+            print("found best match {} with score {}".format(best_match, highest_score))
+            return best_match
+
+        if intenser_matching_words:
+            return random.choice(intenser_matching_words)[0]
+        else:
+            return word.word
 
 def dbprint(input):
     if debug:

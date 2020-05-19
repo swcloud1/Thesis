@@ -1,6 +1,7 @@
 import paralleldots
 import sys
 import csv
+from time import sleep
 
 # data = [ "I like walking in the park", "Don't repeat the same thing over and over!", "This new Liverpool team is not bad", "I have a throat infection" ]
 
@@ -35,8 +36,8 @@ def load_sentences(amount=-1):
     with open('emo-dataset/val.txt') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=';')
         for row in csv_reader:
-            if len(sentences) == amount:
-                break
+            # if len(sentences) == amount:
+            #     break
             sentences.append((row[0],row[1]))
     return [x for x in sentences if x[1] in ekman_emotions]
 
@@ -46,33 +47,55 @@ def main(args):
     paralleldots.set_api_key("QBDTl86PKSyRGGJDAO9RP3AG2DmhMybT41tUGL0nldE")
 
 
+    test_results = {
+        "anger":{"total":0,"correct":0},
+        "fear":{"total":0,"correct":0},
+        "sadness":{"total":0,"correct":0}
+    }
 
 
     if args:
         print("Input: {}".format(args[0]))
         # print(paralleldots.emotion(args[0]))
-        printResults(paralleldots.emotion(args[0])["emotion"])
+        # printResults(paralleldots.emotion(args[0])["emotion"])
     else:
-        sentences = load_sentences(amount=80)
-        results = paralleldots.batch_emotion([x[0] for x in sentences])
-        print(results)
+        sentences = load_sentences(amount=-2)
 
-        matches = 0
-        # length_sentences = len(sentences)
+        start = 650
+        limit = 50
 
-        for i in range(len(sentences)):
-            print()
-            print(sentences[i][0])
-            print(results['emotion'][i])
-            ml_results = filterResult(results['emotion'][i])
-            print(ml_results)
-            max_ml_emo = max(ml_results, key=ml_results.get)
-            print("ML: {}".format(max_ml_emo))
-            print("VAL: {}".format(sentences[i][1]))
-            if max_ml_emo == sentences[i][1]:
-                matches += 1
+        while start < len(sentences):
 
-        print("\nCorrectness: {}/{} = {}%".format(matches, len(sentences), (matches/len(sentences)*100)))
+
+        # sentences = sentences[100:150]
+        # print(len(sentences))
+            print("\nSentences [{}:{}]".format(start, start+limit))
+            results = paralleldots.batch_emotion([x[0] for x in sentences[start:start+limit]])
+            # print(results)
+
+            matches = 0
+
+            for i in range(len(sentences[start:start+limit])):
+                # print()
+                # print(sentences[start:start+limit][i][0])
+                # print(results['emotion'])
+                ml_results = filterResult(results['emotion'][i])
+                # print(ml_results)
+                max_ml_emo = max(ml_results, key=ml_results.get)
+                # print("ML: {}".format(max_ml_emo))
+                # print("VAL: {}".format(sentences[start:start+limit][i][1]))
+                test_results[sentences[start:start+limit][i][1]]["total"] += 1
+                if max_ml_emo == sentences[start:start+limit][i][1]:
+                    matches += 1
+                    test_results[sentences[start:start+limit][i][1]]["correct"] += 1
+
+            print("\nCorrectness: {}/{} = {}%".format(matches, len(sentences[start:start+limit]), (matches/len(sentences[start:start+limit])*100)))
+            print("Test Result: {}".format(test_results))
+
+            start += limit
+            for i in range(12):
+                print("Sleeping: {}".format(i * 5))
+                sleep(5)
 
 
 def filterResult(result):
