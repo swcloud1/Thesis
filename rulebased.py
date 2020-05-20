@@ -53,15 +53,6 @@ def load_sentences(amount=-1):
     return [x for x in sentences if x[1] in ekman_emotions]
 
 
-def synonyms(word):
-    synonyms = []
-
-    for syn in wordnet.synsets(word, pos=wordnet.ADJ):
-        for l in syn.lemmas():
-            synonyms.append(l.name())
-
-    print(set(synonyms))
-    return synonyms
 
 def main(args):
 
@@ -75,12 +66,6 @@ def main(args):
     trial = 0
     prev_percentage = 0
     cur_percentage = 0
-
-    # w1 = wordnet.synset('ship.n.01')
-    # w2 = wordnet.synset('cat.n.01')
-    # print(w1.wup_similarity(w2))
-    #
-
 
     test_results = {
         "anger":{"total":0,"correct":0},
@@ -109,7 +94,9 @@ def main(args):
                 matches += 1
                 test_results[sentence[1]]["correct"] += 1
             intensified_sentence = intensify(analysed_sentence)
-            print("Output: {}".format(intensified_sentence))
+            print("Intensified Sentence: {}".format(intensified_sentence))
+            less_intensified_sentence = lessen(analysed_sentence)
+            print("Less-Intensified Sentence: {}".format(less_intensified_sentence))
         print("\nCorrectness: {}/{} = {}%".format(matches, len(sentences), (matches/len(sentences)*100)))
         print("Test Result: {}".format(test_results))
 
@@ -129,7 +116,7 @@ def intensify(input):
 
 def lessen(input):
     transformer = Transformer()
-    return transformer.lessen(input, "less")
+    return transformer.intensify(input, "less")
 
 def loadIntensityLexicon(source):
     intensity_lexicon = []
@@ -248,13 +235,71 @@ class Transformer:
 
         return contributingWords
 
-    def getLessIntenseWord(self, word):
+    def getMoreIntenseWord(self, word):
         emotion = word.getMainEmotion()
-        intenser_words = [x[0] for x in intensity_lexicon if x[1] == emotion[0] and x[2] < emotion[1]]
-        word_type = nltk.pos_tag([word.word])
-        tagged_intenser_words = nltk.pos_tag(intenserWords)
-        interserMatchingWords = [word for word in tagged_intenser_words if word[1] == word_type[0][1]]
-        return random.choice(interserMatchingWords)[0]
+        print("Replacing word {}({}) with emotion {} with a more intense word".format(word.word, word.pos, emotion))
+        matching_words = [x for x in intensity_lexicon if x[1] == emotion[0] and x[2] > emotion[1] and x[3] == word.pos]
+
+        return self.getMostFittingReplacementWord(word, matching_words)
+
+    def getLessIntenseWord(self, word):
+
+        emotion = word.getMainEmotion()
+        print("Replacing word {}({}) with emotion {} with a less intense word".format(word.word, word.pos, emotion))
+        matching_words = [x for x in intensity_lexicon if x[1] == emotion[0] and x[2] < emotion[1] and x[3] == word.pos]
+
+        return self.getMostFittingReplacementWord(word, matching_words)
+
+
+    def synonyms(self, word):
+        synonyms = []
+
+        for syn in wordnet.synsets(word, pos=wordnet.ADJ):
+            for l in syn.lemmas():
+                synonyms.append(l.name())
+
+        print(set(synonyms))
+        return synonyms
+
+
+    def getMostFittingReplacementWord(self,source_word, matching_words):
+
+        best_match = ""
+        highest_score = 0.0
+
+        # get meanings of word
+        source_wordsets = self.get_wordsets(source_word.word, source_word.pos)
+        # cycle through source word meanings
+        for source_wordset in source_wordsets:
+            # cycle through matching target words
+            for matching_word in matching_words:
+                # get meanings of matching target word
+                matching_wordsets = self.get_wordsets(matching_word[0], source_word.pos)
+                # cycle through meanings of matching target word
+                synonyms = []
+                for matching_wordset in matching_wordsets:
+                    # for l in matching_wordset.lemmas():
+                    #     synonyms.append(l.name())
+                    name = matching_wordset.lemmas()[0].name()
+                    # if the synonym is found in the lexicon
+                    if name == matching_word[0]:
+                        # check the similarty to original word
+                        similarity = source_wordset.wup_similarity(matching_wordset)
+                        # if it is the current highest similarity store its name and similarity
+                        if similarity and similarity > highest_score:
+                            highest_score = similarity
+                            best_match = name
+
+        if best_match != "":
+            dbprint("found best match {} with score {}".format(best_match, highest_score))
+            return best_match
+        if matching_words:
+            replacement_word = random.choice(matching_words)
+            dbprint("found replacement word {}".format(replacement_word))
+            return replacement_word[0]
+        else:
+            dbprint("found no replacement word")
+            return source_word.word
 
 
     def get_wordsets(self, word, pos):
@@ -281,47 +326,6 @@ class Transformer:
         else:
             return wordnet.synsets(word)
 
-    def getMoreIntenseWord(self, word):
-        print("Replacing word {} which is a {}".format(word.word, word.pos))
-        emotion = word.getMainEmotion()
-        intenser_matching_words = [x for x in intensity_lexicon if x[1] == emotion[0] and x[2] > emotion[1] and x[3] == word.pos]
-
-        best_match = ""
-        highest_score = 0.0
-        source_wordsets = self.get_wordsets(word.word, word.pos)
-        for source_wordset in source_wordsets:
-            for matching_word in intenser_matching_words:
-                matching_wordsets = self.get_wordsets(matching_word[0], word.pos)
-                for matching_wordset in matching_wordsets:
-                    name = matching_wordset.lemmas()[0].name()
-                    if name == matching_word[0]:
-                        similarity = source_wordset.wup_similarity(matching_wordset)
-                        if similarity and similarity > highest_score:
-                            highest_score = similarity
-                            best_match = name
-
-        if best_match != "":
-            print("found best match {} with score {}".format(best_match, highest_score))
-            return best_match
-        if intenser_matching_words:
-            print("found intenser word")
-            return random.choice(intenser_matching_words)[0]
-        else:
-            print("found no intenser word")
-            return word.word
-
-
-def adv2adj(word):
-    possible_adj = []
-    for ss in wn.synsets(word):
-      for lemmas in ss.lemmas(): # all possible lemmas
-          for ps in lemmas.pertainyms(): # all possible pertainyms
-              possible_adj.append(ps.name())
-    if possible_adj:
-        dbprint("Coverted {} to adjective: {}".format(word, possible_adj[0]))
-        return possible_adj[0]
-
-    return word
 
 
 def dbprint(input):
