@@ -32,35 +32,35 @@ Test Result: {'anger': {'total': 16, 'correct': 4}, 'fear': {'total': 10, 'corre
 
 Sentences [250:300]
 Correctness: 25/50 = 50.0%
-Test Result: {'anger': {'total': 27, 'correct': 5}, 'fear': {'total': 18, 'correct': 6}, 'sadness': {'total': 55, 'correct': 38}}
+Test Result: {'anger': {'total': 11, 'correct': 1}, 'fear': {'total': 8, 'correct': 3}, 'sadness': {'total': 31, 'correct': 21}}
 
 Sentences [300:350]
 Correctness: 26/50 = 52.0%
-Test Result: {'anger': {'total': 36, 'correct': 9}, 'fear': {'total': 29, 'correct': 8}, 'sadness': {'total': 85, 'correct': 58}}
+Test Result: {'anger': {'total': 9, 'correct': 4}, 'fear': {'total': 11, 'correct': 2}, 'sadness': {'total': 30, 'correct': 20}}
 
 Sentences [350:400]
 Correctness: 27/50 = 54.0%
-Test Result: {'anger': {'total': 51, 'correct': 13}, 'fear': {'total': 39, 'correct': 12}, 'sadness': {'total': 110, 'correct': 77}}
+Test Result: {'anger': {'total': 15, 'correct': 4}, 'fear': {'total': 10, 'correct': 4}, 'sadness': {'total': 25, 'correct': 19}}
 
 Sentences [400:450]
 Correctness: 30/50 = 60.0%
-Test Result: {'anger': {'total': 63, 'correct': 19}, 'fear': {'total': 47, 'correct': 15}, 'sadness': {'total': 140, 'correct': 98}}
+Test Result: {'anger': {'total': 12, 'correct': 6}, 'fear': {'total': 8, 'correct': 3}, 'sadness': {'total': 30, 'correct': 21}}
 
 Sentences [450:500]
 Correctness: 29/50 = 57.99999999999999%
-Test Result: {'anger': {'total': 74, 'correct': 21}, 'fear': {'total': 57, 'correct': 17}, 'sadness': {'total': 169, 'correct': 123}}
+Test Result: {'anger': {'total': 11, 'correct': 2}, 'fear': {'total': 10, 'correct': 2}, 'sadness': {'total': 29, 'correct': 25}}
 
 Sentences [500:550]
 Correctness: 23/50 = 46.0%
-Test Result: {'anger': {'total': 93, 'correct': 23}, 'fear': {'total': 62, 'correct': 18}, 'sadness': {'total': 195, 'correct': 143}}
+Test Result: {'anger': {'total': 19, 'correct': 2}, 'fear': {'total': 5, 'correct': 1}, 'sadness': {'total': 26, 'correct': 20}}
 
 Sentences [550:600]
 Correctness: 28/50 = 56.00000000000001%
-Test Result: {'anger': {'total': 107, 'correct': 27}, 'fear': {'total': 72, 'correct': 23}, 'sadness': {'total': 221, 'correct': 162}}
-
+Test Result: {'anger': {'total': 14, 'correct': 4}, 'fear': {'total': 10, 'correct': 5}, 'sadness': {'total': 26, 'correct': 19}}
+2
 Sentences [600:650]
 Correctness: 29/50 = 57.99999999999999%
-Test Result: {'anger': {'total': 120, 'correct': 33}, 'fear': {'total': 82, 'correct': 28}, 'sadness': {'total': 248, 'correct': 180}}
+Test Result: {'anger': {'total': 13, 'correct': 6}, 'fear': {'total': 10, 'correct': 5}, 'sadness': {'total': 27, 'correct': 18}}
 
 Sentences [650:700]
 Correctness: 29/50 = 57.99999999999999%
@@ -68,31 +68,31 @@ Test Result: {'anger': {'total': 14, 'correct': 6}, 'fear': {'total': 11, 'corre
 
 Sentences [700:750]
 Correctness: 24/50 = 48.0%
-Test Result: {'anger': {'total': 29, 'correct': 9}, 'fear': {'total': 25, 'correct': 11}, 'sadness': {'total': 46, 'correct': 33}}
+Test Result: {'anger': {'total': 15, 'correct': 3}, 'fear': {'total': 14, 'correct': 6}, 'sadness': {'total': 21, 'correct': 15}}
 
 Sentences [750:800]
 Correctness: 24/50 = 48.0%
-Test Result: {'anger': {'total': 48, 'correct': 15}, 'fear': {'total': 31, 'correct': 14}, 'sadness': {'total': 71, 'correct': 48}}
+Test Result: {'anger': {'total': 19, 'correct': 6}, 'fear': {'total': 6, 'correct': 3}, 'sadness': {'total': 25, 'correct': 15}}
 
 Sentences [800:850]
 Correctness: 24/50 = 48.0%
-Test Result: {'anger': {'total': 62, 'correct': 20}, 'fear': {'total': 47, 'correct': 19}, 'sadness': {'total': 91, 'correct': 62}}
+Test Result: {'anger': {'total': 14, 'correct': 5}, 'fear': {'total': 16, 'correct': 5}, 'sadness': {'total': 20, 'correct': 14}}
 
 Sentences [850:900]
 Correctness: 27/50 = 54.0%
-Test Result: {'anger': {'total': 72, 'correct': 23}, 'fear': {'total': 58, 'correct': 23}, 'sadness': {'total': 120, 'correct': 82}}
+Test Result: {'anger': {'total': 10, 'correct': 3}, 'fear': {'total': 11, 'correct': 4}, 'sadness': {'total': 29, 'correct': 20}}
 
 Sentences [900:950]
 Correctness: 30/50 = 60.0%
-Test Result: {'anger': {'total': 84, 'correct': 28}, 'fear': {'total': 67, 'correct': 27}, 'sadness': {'total': 149, 'correct': 103}}
+Test Result: {'anger': {'total': 12, 'correct': 5}, 'fear': {'total': 9, 'correct': 4}, 'sadness': {'total': 29, 'correct': 21}}
 
 Sentences [950:1000]
 Correctness: 30/50 = 60.0%
-Test Result: {'anger': {'total': 93, 'correct': 33}, 'fear': {'total': 81, 'correct': 34}, 'sadness': {'total': 176, 'correct': 121}}
+Test Result: {'anger': {'total': 9, 'correct': 5}, 'fear': {'total': 14, 'correct': 7}, 'sadness': {'total': 27, 'correct': 18}}
 
 Sentences [1000:1050]
 Correctness: 25/37 = 67.56756756756756%
-Test Result: {'anger': {'total': 102, 'correct': 36}, 'fear': {'total': 90, 'correct': 39}, 'sadness': {'total': 195, 'correct': 138}}
+Test Result: {'anger': {'total': 9, 'correct': 3}, 'fear': {'total': 9, 'correct': 5}, 'sadness': {'total': 19, 'correct': 17}}
 
 
 

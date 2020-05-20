@@ -1,0 +1,137 @@
+Questions for Adam:
+- Is a validation score of 55% okay to continue, or should I find different way?
+- Can I ask Ana to be the second reader
+- Writing related work before or after all results are in
+
+ToDo:
+[x] Finish validation tests for ML
+[ ] Finish Writing results validation tests for ML
+[ ] Finish implementation for intensify less/more
+[ ] Write results intensify/lessen 
+
+
+Sentences [0:50]
+Correctness: 24/50 = 48.0%
+Test Result: {'anger': {'total': 12, 'correct': 2}, 'fear': {'total': 3, 'correct': 1}, 'sadness': {'total': 19, 'correct': 13}, 'joy': {'total': 16, 'correct': 8}}
+
+Sentences [50:100]
+Correctness: 24/50 = 48.0%
+Test Result: {'anger': {'total': 9, 'correct': 2}, 'fear': {'total': 11, 'correct': 5}, 'sadness': {'total': 15, 'correct': 10}, 'joy': {'total': 15, 'correct': 7}}
+
+Sentences [150:200]
+Correctness: 27/50 = 54.0%
+Test Result: {'anger': {'total': 7, 'correct': 3}, 'fear': {'total': 9, 'correct': 3}, 'sadness': {'total': 15, 'correct': 9}, 'joy': {'total': 19, 'correct': 12}}
+
+Sentences [150:200]
+Correctness: 27/50 = 54.0%
+Test Result: {'anger': {'total': 7, 'correct': 3}, 'fear': {'total': 9, 'correct': 3}, 'sadness': {'total': 15, 'correct': 9}, 'joy': {'total': 19, 'correct': 12}}
+
+Sentences [200:250]
+Correctness: 27/50 = 54.0%
+Test Result: {'anger': {'total': 5, 'correct': 2}, 'fear': {'total': 4, 'correct': 1}, 'sadness': {'total': 13, 'correct': 10}, 'joy': {'total': 28, 'correct': 14}}
+
+Sentences [250:300]
+Correctness: 26/50 = 52.0%
+Test Result: {'anger': {'total': 9, 'correct': 3}, 'fear': {'total': 11, 'correct': 1}, 'sadness': {'total': 12, 'correct': 7}, 'joy': {'total': 18, 'correct': 15}}
+
+Sentences [300:350]
+Correctness: 30/50 = 60.0%
+Test Result: {'anger': {'total': 8, 'correct': 3}, 'fear': {'total': 4, 'correct': 1}, 'sadness': {'total': 21, 'correct': 16}, 'joy': {'total': 17, 'correct': 10}}
+
+Sentences [350:400]
+Correctness: 20/50 = 40.0%
+Test Result: {'anger': {'total': 12, 'correct': 4}, 'fear': {'total': 7, 'correct': 0}, 'sadness': {'total': 5, 'correct': 4}, 'joy': {'total': 26, 'correct': 12}}
+
+Sentences [400:450]
+Correctness: 20/50 = 40.0%
+Test Result: {'anger': {'total': 6, 'correct': 0}, 'fear': {'total': 4, 'correct': 2}, 'sadness': {'total': 21, 'correct': 13}, 'joy': {'total': 19, 'correct': 5}}
+
+Sentences [450:500]
+Correctness: 22/50 = 44.0%
+Test Result: {'anger': {'total': 7, 'correct': 1}, 'fear': {'total': 5, 'correct': 1}, 'sadness': {'total': 21, 'correct': 14}, 'joy': {'total': 17, 'correct': 6}}
+
+Sentences [500:550]
+Correctness: 26/50 = 52.0%
+Test Result: {'anger': {'total': 5, 'correct': 3}, 'fear': {'total': 6, 'correct': 2}, 'sadness': {'total': 20, 'correct': 11}, 'joy': {'total': 19, 'correct': 10}}
+
+Sentences [550:600]
+Correctness: 26/50 = 52.0%
+Test Result: {'anger': {'total': 5, 'correct': 1}, 'fear': {'total': 8, 'correct': 1}, 'sadness': {'total': 14, 'correct': 12}, 'joy': {'total': 23, 'correct': 12}}
+
+Sentences [600:650]
+Correctness: 22/50 = 44.0%
+Test Result: {'anger': {'total': 11, 'correct': 4}, 'fear': {'total': 5, 'correct': 2}, 'sadness': {'total': 14, 'correct': 9}, 'joy': {'total': 20, 'correct': 7}}
+
+Sentences [650:700]
+Correctness: 24/50 = 48.0%
+Test Result: {'anger': {'total': 8, 'correct': 2}, 'fear': {'total': 5, 'correct': 1}, 'sadness': {'total': 17, 'correct': 10}, 'joy': {'total': 20, 'correct': 11}}
+
+Sentences [700:750]
+Correctness: 25/50 = 50.0%
+Test Result: {'anger': {'total': 7, 'correct': 3}, 'fear': {'total': 6, 'correct': 1}, 'sadness': {'total': 13, 'correct': 10}, 'joy': {'total': 24, 'correct': 11}}
+
+Sentences [750:800]
+Correctness: 26/50 = 52.0%
+Test Result: {'anger': {'total': 7, 'correct': 0}, 'fear': {'total': 4, 'correct': 1}, 'sadness': {'total': 16, 'correct': 13}, 'joy': {'total': 23, 'correct': 12}}
+
+Sentences [800:850]
+Correctness: 30/50 = 60.0%
+Test Result: {'anger': {'total': 6, 'correct': 3}, 'fear': {'total': 5, 'correct': 1}, 'sadness': {'total': 15, 'correct': 12}, 'joy': {'total': 24, 'correct': 14}}
+
+Sentences [850:900]
+Correctness: 21/50 = 42.0%
+Test Result: {'anger': {'total': 11, 'correct': 1}, 'fear': {'total': 4, 'correct': 1}, 'sadness': {'total': 18, 'correct': 13}, 'joy': {'total': 17, 'correct': 6}}
+
+Sentences [900:950]
+Correctness: 25/50 = 50.0%
+Test Result: {'anger': {'total': 13, 'correct': 2}, 'fear': {'total': 2, 'correct': 0}, 'sadness': {'total': 14, 'correct': 10}, 'joy': {'total': 21, 'correct': 13}}
+
+Sentences [950:1000]
+Correctness: 23/50 = 46.0%
+Test Result: {'anger': {'total': 6, 'correct': 2}, 'fear': {'total': 8, 'correct': 3}, 'sadness': {'total': 17, 'correct': 13}, 'joy': {'total': 19, 'correct': 5}}
+
+Sentences [1000:1050]
+Correctness: 27/50 = 54.0%
+Test Result: {'anger': {'total': 4, 'correct': 2}, 'fear': {'total': 6, 'correct': 5}, 'sadness': {'total': 19, 'correct': 13}, 'joy': {'total': 21, 'correct': 7}}
+
+Sentences [1050:1100]
+Correctness: 18/50 = 36.0%
+Test Result: {'anger': {'total': 10, 'correct': 4}, 'fear': {'total': 6, 'correct': 1}, 'sadness': {'total': 10, 'correct': 4}, 'joy': {'total': 24, 'correct': 9}}
+
+Sentences [1100:1150]
+Correctness: 22/50 = 44.0%
+Test Result: {'anger': {'total': 10, 'correct': 4}, 'fear': {'total': 6, 'correct': 1}, 'sadness': {'total': 17, 'correct': 10}, 'joy': {'total': 17, 'correct': 7}}
+
+Sentences [1150:1200]
+Correctness: 25/50 = 50.0%
+Test Result: {'anger': {'total': 10, 'correct': 3}, 'fear': {'total': 7, 'correct': 2}, 'sadness': {'total': 13, 'correct': 12}, 'joy': {'total': 20, 'correct': 8}}
+
+Sentences [1200:1250]
+Correctness: 29/50 = 57.99999999999999%
+Test Result: {'anger': {'total': 6, 'correct': 1}, 'fear': {'total': 8, 'correct': 5}, 'sadness': {'total': 11, 'correct': 6}, 'joy': {'total': 25, 'correct': 17}}
+
+Sentences [1250:1300]
+Correctness: 25/50 = 50.0%
+Test Result: {'anger': {'total': 12, 'correct': 3}, 'fear': {'total': 4, 'correct': 1}, 'sadness': {'total': 15, 'correct': 13}, 'joy': {'total': 19, 'correct': 8}}
+
+Sentences [1300:1350]
+Correctness: 25/50 = 50.0%
+Test Result: {'anger': {'total': 8, 'correct': 4}, 'fear': {'total': 3, 'correct': 2}, 'sadness': {'total': 14, 'correct': 5}, 'joy': {'total': 25, 'correct': 14}}
+
+Sentences [1350:1400]
+Correctness: 24/50 = 48.0%
+Test Result: {'anger': {'total': 8, 'correct': 1}, 'fear': {'total': 9, 'correct': 1}, 'sadness': {'total': 10, 'correct': 8}, 'joy': {'total': 23, 'correct': 14}}
+
+Sentences [1400:1450]
+Correctness: 29/50 = 57.99999999999999%
+Test Result: {'anger': {'total': 7, 'correct': 4}, 'fear': {'total': 8, 'correct': 3}, 'sadness': {'total': 11, 'correct': 7}, 'joy': {'total': 24, 'correct': 15}}
+
+Sentences [1450:1500]
+Correctness: 24/50 = 48.0%
+Test Result: {'anger': {'total': 7, 'correct': 2}, 'fear': {'total': 9, 'correct': 4}, 'sadness': {'total': 20, 'correct': 11}, 'joy': {'total': 14, 'correct': 7}}
+
+Sentences [1500:1550]
+Correctness: 28/50 = 56.00000000000001%
+Test Result: {'anger': {'total': 9, 'correct': 3}, 'fear': {'total': 6, 'correct': 2}, 'sadness': {'total': 21, 'correct': 16}, 'joy': {'total': 14, 'correct': 7}}
+
+
