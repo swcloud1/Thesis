@@ -14,7 +14,10 @@ from nltk.tokenize import word_tokenize
 import random
 import language_tool_python
 
-debug = 0
+class FeatureFlags():
+    debug = False
+    check_grammar = False
+
 intensity_lexicon = []
 # ekman_emotions = [
 # "anger",
@@ -40,77 +43,81 @@ def remove_punctuation(text):
     result = text.translate(str.maketrans('','',string.punctuation))
     return result
 
-
-
-def load_sentences(amount=-1):
+def load_validation_sentences(source, amount=-1):
     sentences = []
-    with open('rulebasedandmlbasedworking.txt') as csv_file:
+    with open(source) as csv_file:
     # with open('validationsentences.txt') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=';')
         for row in csv_reader:
             if len(sentences) == amount:
                 break
-            sentences.append((row[0],row[1]))
-    return [x for x in sentences if x[1] in ekman_emotions]
-
-
-def hasher(s):  # this is not a good hashing function
-    return hashlib.md5(str.encode(s)).hexdigest()
+            sentences.append(ValidationSentence(row[0],row[1]))
+    return [x for x in sentences if x.emotion in ekman_emotions]
 
 def check_grammar(grammar_tool, sentence):
     # text = 'A sentence with a error in the Hitchhiker’s Guide tot he Galaxy'
-    matches = grammar_tool.check(sentence)
-    if matches:
-        print("Grammar Check: Has Errors")
-    else:
-        print("Grammar Check: No Errors")
-    for match in matches:
-        print(match.ruleId, match.replacements)
+    if FeatureFlags().check_grammar:
+        matches = grammar_tool.check(sentence)
+        if matches:
+            print("Grammar Check: Has Errors")
+        else:
+            print("Grammar Check: No Errors")
+        for match in matches:
+            print(match.ruleId, match.replacements)
+
+
+
+
+class TestDetection():
+
+    def __init__(self, test_size):
+        self.test_size = test_size
+        self.matches = 0
+        self.test_results = {
+            "anger":{"total":0,"correct":0},
+            "fear":{"total":0,"correct":0},
+            "sadness":{"total":0,"correct":0},
+            "joy":{"total":0,"correct":0}
+        }
+
+    def validate(self, input_sentence, output_sentence):
+        self.test_results[input_sentence.emotion]["total"] += 1
+        if output_sentence.getMainEmotion()[0] == input_sentence.emotion:
+            self.matches += 1
+            self.test_results[input_sentence.emotion]["correct"] += 1
+
+    def print_results(self):
+        print("\nCorrectness: {}/{} = {}%".format(self.matches, self.test_size, (self.matches/self.test_size*100)))
+        print("Test Result: {}".format(self.test_results))
+
+class ValidationSentence():
+
+    def __init__(self, text, emotion):
+        self.text = text
+        self.emotion = emotion
 
 def main(args):
-
-
-    grammar_tool = language_tool_python.LanguageTool('en-US')
-
-
     global intensity_lexicon
 
+    grammar_tool = language_tool_python.LanguageTool('en-US')
     intensity_lexicon = loadIntensityLexicon('emotionintensitylexicon.txt')
-    sentences = load_sentences(amount = 5)
-    length_sentences = len(sentences)
-
-    matches = 0
-    trial = 0
-    prev_percentage = 0
-    cur_percentage = 0
-
-    test_results = {
-        "anger":{"total":0,"correct":0},
-        "fear":{"total":0,"correct":0},
-        "sadness":{"total":0,"correct":0},
-        "joy":{"total":0,"correct":0}
-    }
+    sentences = load_validation_sentences('rulebasedandmlbasedworking.txt', amount = 5)
+    progress = Progress(len(sentences))
+    validator = TestDetection(len(sentences))
 
     if not args:
         for sentence in sentences:
-            print()
-            cur_percentage = int(trial/length_sentences*100)
-            if (cur_percentage % 5 == 0) and (cur_percentage != prev_percentage):
-                print("{}%".format(cur_percentage))
-                prev_percentage = cur_percentage
-            trial+=1
-            input = sentence[0]
-            print("Input: {}".format(input))
-            check_grammar(grammar_tool, input)
-            preprocessed_input = preprocess(input)
+            progress.print_progress()
+
+            print("Input: {}".format(sentence.text))
+            check_grammar(grammar_tool, sentence.text)
+
+            preprocessed_input = preprocess(sentence.text)
             analysed_sentence = analyse(preprocessed_input)
-            # print("RB-Output: {}".format(analysed_sentence.emotions))
-            # print("RB-MainEmotion: {}".format(analysed_sentence.getMainEmotion()[0]))
-            # print("VAL-Output: {}".format(sentence[1]))
-            test_results[sentence[1]]["total"] += 1
-            if analysed_sentence.getMainEmotion()[0] == sentence[1]:
-                matches += 1
-                test_results[sentence[1]]["correct"] += 1
+            print("RB-Output: {}".format(analysed_sentence.emotions))
+            print("RB-MainEmotion: {}".format(analysed_sentence.getMainEmotion()[0]))
+            print("VAL-Output: {}".format(sentence.emotion))
+            validator.validate(sentence, analysed_sentence)
 
             intensified_sentence = intensify(analysed_sentence)
             print("Intensified Sentence: {}".format(intensified_sentence))
@@ -120,8 +127,7 @@ def main(args):
             print("Less-Intensified Sentence: {}".format(less_intensified_sentence))
             check_grammar(grammar_tool, less_intensified_sentence)
 
-        print("\nCorrectness: {}/{} = {}%".format(matches, len(sentences), (matches/len(sentences)*100)))
-        print("Test Result: {}".format(test_results))
+        validator.print_results()
 
     else:
         input = args[0]
@@ -225,8 +231,6 @@ class Transformer:
     global intensity_lexicon
 
     def intensify(self, sentence, direction):
-        # mainEmotion = sentence.getMainEmotion()
-        output = []
         replacements = {}
         contributingWords = self.getContributingWords(sentence)
         for word in contributingWords:
@@ -235,15 +239,17 @@ class Transformer:
             if direction == "less":
                 replacements[word.word] = self.getLessIntenseWord(word)
 
+        output = self.replace_words(sentence, replacements)
+        return "{}".format(' '.join(output))
+
+    def replace_words(self, sentence, replacements):
+        output = []
         for word in sentence.words:
             if word.word in replacements:
                 output.append(replacements[word.word])
             else:
                 output.append(word.word)
-
-        return "{}".format(' '.join(output))
-
-
+        return output
 
     def getContributingWords(self, sentence):
         contributingWords = []
@@ -277,7 +283,6 @@ class Transformer:
             for l in syn.lemmas():
                 synonyms.append(l.name())
 
-        print(set(synonyms))
         return synonyms
 
 
@@ -345,10 +350,24 @@ class Transformer:
         else:
             return wordnet.synsets(word)
 
+class Progress():
 
+    def __init__(self, total_trials, increment = 5):
+        self.cur_trial = 0
+        self.total_trials = total_trials
+        self.cur_percentage = 0
+        self.prev_percentage = 0
+        self.increment = increment
+
+    def print_progress(self):
+        self.cur_percentage = int(self.cur_trial/self.total_trials*100)
+        if (self.cur_percentage % self.increment == 0) and (self.cur_percentage != self.prev_percentage):
+            print("\n{}%".format(self.cur_percentage))
+            self.prev_percentage = self.cur_percentage
+        self.cur_trial+=1
 
 def dbprint(input):
-    if debug:
+    if FeatureFlags().debug:
         print(input)
 
 if __name__ == "__main__":
