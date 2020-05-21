@@ -17,6 +17,8 @@ import language_tool_python
 class FeatureFlags():
     debug = False
     check_grammar = False
+    test_detection_accuracy = False
+    progress = True
 
 intensity_lexicon = []
 # ekman_emotions = [
@@ -49,28 +51,36 @@ def load_validation_sentences(source, amount=-1):
     # with open('validationsentences.txt') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=';')
         for row in csv_reader:
-            if len(sentences) == amount:
+            if amount and len(sentences) == amount:
                 break
             sentences.append(ValidationSentence(row[0],row[1]))
     return [x for x in sentences if x.emotion in ekman_emotions]
 
-def check_grammar(grammar_tool, sentence):
-    # text = 'A sentence with a error in the Hitchhiker’s Guide tot he Galaxy'
-    if FeatureFlags().check_grammar:
-        matches = grammar_tool.check(sentence)
-        if matches:
-            print("Grammar Check: Has Errors")
-        else:
-            print("Grammar Check: No Errors")
-        for match in matches:
-            print(match.ruleId, match.replacements)
 
+
+
+class GrammarCheck():
+
+    def __init__(self, enabled=True):
+        self.enabled = enabled
+        self.tool = language_tool_python.LanguageTool('en-US')
+
+    def check(self, sentence):
+        if self.enabled:
+            matches = self.tool.check(sentence)
+            if matches:
+                print("Grammar Check: Has Errors")
+            else:
+                print("Grammar Check: No Errors")
+            for match in matches:
+                print(match.ruleId, match.replacements)
 
 
 
 class TestDetection():
 
-    def __init__(self, test_size):
+    def __init__(self, test_size, enabled=True):
+        self.enabled = enabled
         self.test_size = test_size
         self.matches = 0
         self.test_results = {
@@ -81,14 +91,19 @@ class TestDetection():
         }
 
     def validate(self, input_sentence, output_sentence):
-        self.test_results[input_sentence.emotion]["total"] += 1
-        if output_sentence.getMainEmotion()[0] == input_sentence.emotion:
-            self.matches += 1
-            self.test_results[input_sentence.emotion]["correct"] += 1
+        if self.enabled:
+            self.test_results[input_sentence.emotion]["total"] += 1
+            if output_sentence.getMainEmotion()[0] == input_sentence.emotion:
+                print("Match: Emotion={}".format(analysed_sentence.getMainEmotion()[0]))
+                self.matches += 1
+                self.test_results[input_sentence.emotion]["correct"] += 1
+            else:
+                print("Not Match: RB-Emotion={}, VAL-Emotion={}".format(analysed_sentence.getMainEmotion()[0], input_sentence.emotion))
 
     def print_results(self):
-        print("\nCorrectness: {}/{} = {}%".format(self.matches, self.test_size, (self.matches/self.test_size*100)))
-        print("Test Result: {}".format(self.test_results))
+        if self.enabled:
+            print("\nCorrectness: {}/{} = {}%".format(self.matches, self.test_size, (self.matches/self.test_size*100)))
+            print("Test Result: {}".format(self.test_results))
 
 class ValidationSentence():
 
@@ -99,33 +114,32 @@ class ValidationSentence():
 def main(args):
     global intensity_lexicon
 
-    grammar_tool = language_tool_python.LanguageTool('en-US')
+
     intensity_lexicon = loadIntensityLexicon('emotionintensitylexicon.txt')
-    sentences = load_validation_sentences('rulebasedandmlbasedworking.txt', amount = 5)
-    progress = Progress(len(sentences))
-    validator = TestDetection(len(sentences))
+    input_sentences = load_validation_sentences('rulebasedandmlbasedworking.txt', amount = None)
+    progress = Progress(len(input_sentences), enabled=FeatureFlags().progress)
+    validator = TestDetection(len(input_sentences), enabled=FeatureFlags().test_detection_accuracy)
+    grammar_tool = GrammarCheck(enabled=FeatureFlags().check_grammar)
 
     if not args:
-        for sentence in sentences:
+        for input_sentence in input_sentences:
             progress.print_progress()
 
-            print("Input: {}".format(sentence.text))
-            check_grammar(grammar_tool, sentence.text)
+            print("\nInput: {}".format(input_sentence.text))
+            grammar_tool.check(input_sentence.text)
 
-            preprocessed_input = preprocess(sentence.text)
+            preprocessed_input = preprocess(input_sentence.text)
             analysed_sentence = analyse(preprocessed_input)
-            print("RB-Output: {}".format(analysed_sentence.emotions))
-            print("RB-MainEmotion: {}".format(analysed_sentence.getMainEmotion()[0]))
-            print("VAL-Output: {}".format(sentence.emotion))
-            validator.validate(sentence, analysed_sentence)
+            print("Analysed Sentence: {}".format(analysed_sentence.emotions))
+            validator.validate(input_sentence, analysed_sentence)
 
             intensified_sentence = intensify(analysed_sentence)
             print("Intensified Sentence: {}".format(intensified_sentence))
-            check_grammar(grammar_tool, intensified_sentence)
+            grammar_tool.check(intensified_sentence)
 
             less_intensified_sentence = lessen(analysed_sentence)
             print("Less-Intensified Sentence: {}".format(less_intensified_sentence))
-            check_grammar(grammar_tool, less_intensified_sentence)
+            grammar_tool.check(less_intensified_sentence)
 
         validator.print_results()
 
@@ -352,7 +366,8 @@ class Transformer:
 
 class Progress():
 
-    def __init__(self, total_trials, increment = 5):
+    def __init__(self, total_trials, enabled=True, increment = 5):
+        self.enabled = enabled
         self.cur_trial = 0
         self.total_trials = total_trials
         self.cur_percentage = 0
@@ -360,11 +375,12 @@ class Progress():
         self.increment = increment
 
     def print_progress(self):
-        self.cur_percentage = int(self.cur_trial/self.total_trials*100)
-        if (self.cur_percentage % self.increment == 0) and (self.cur_percentage != self.prev_percentage):
-            print("\n{}%".format(self.cur_percentage))
-            self.prev_percentage = self.cur_percentage
-        self.cur_trial+=1
+        if self.enabled:
+            self.cur_percentage = int(self.cur_trial/self.total_trials*100)
+            if (self.cur_percentage % self.increment == 0) and (self.cur_percentage != self.prev_percentage):
+                print("\nCompletion: {}%".format(self.cur_percentage))
+                self.prev_percentage = self.cur_percentage
+            self.cur_trial+=1
 
 def dbprint(input):
     if FeatureFlags().debug:
