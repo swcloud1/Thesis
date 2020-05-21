@@ -12,6 +12,7 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 
 import random
+import language_tool_python
 
 debug = 0
 intensity_lexicon = []
@@ -53,8 +54,24 @@ def load_sentences(amount=-1):
     return [x for x in sentences if x[1] in ekman_emotions]
 
 
+def hasher(s):  # this is not a good hashing function
+    return hashlib.md5(str.encode(s)).hexdigest()
+
+def check_grammar(grammar_tool, sentence):
+    # text = 'A sentence with a error in the Hitchhiker’s Guide tot he Galaxy'
+    matches = grammar_tool.check(sentence)
+    if matches:
+        print("Grammar Check: Has Errors")
+    else:
+        print("Grammar Check: No Errors")
+    for match in matches:
+        print(match.ruleId, match.replacements)
 
 def main(args):
+
+
+    grammar_tool = language_tool_python.LanguageTool('en-US')
+
 
     global intensity_lexicon
 
@@ -84,6 +101,7 @@ def main(args):
             trial+=1
             input = sentence[0]
             print("Input: {}".format(input))
+            check_grammar(grammar_tool, input)
             preprocessed_input = preprocess(input)
             analysed_sentence = analyse(preprocessed_input)
             # print("RB-Output: {}".format(analysed_sentence.emotions))
@@ -93,10 +111,15 @@ def main(args):
             if analysed_sentence.getMainEmotion()[0] == sentence[1]:
                 matches += 1
                 test_results[sentence[1]]["correct"] += 1
+
             intensified_sentence = intensify(analysed_sentence)
             print("Intensified Sentence: {}".format(intensified_sentence))
+            check_grammar(grammar_tool, intensified_sentence)
+
             less_intensified_sentence = lessen(analysed_sentence)
             print("Less-Intensified Sentence: {}".format(less_intensified_sentence))
+            check_grammar(grammar_tool, less_intensified_sentence)
+
         print("\nCorrectness: {}/{} = {}%".format(matches, len(sentences), (matches/len(sentences)*100)))
         print("Test Result: {}".format(test_results))
 
@@ -144,7 +167,6 @@ def analyse(input):
     analysed_sentence = AnalysedSentence()
 
     for word in input:
-        # print(word)
         analysedWord = AnalysedWord(word[0], word[1], getemotions(word[0]))
         analysed_sentence.feed(analysedWord)
 
@@ -189,9 +211,6 @@ class AnalysedSentence:
                 if emotion in self.emotions:
                     self.emotions[emotion] += word.emotions[emotion]
         return self.emotions
-
-    # def printEmotions(self):
-    #     print(self.emotions)
 
     def getMainEmotion(self):
         emotion = max(self.emotions, key=self.emotions.get)
