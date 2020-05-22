@@ -2,6 +2,7 @@ import csv
 import sys
 import string
 import nltk
+import time
 from enum import Enum
 
 from itertools import chain
@@ -123,17 +124,21 @@ class AdjustmentValidator():
             input_main_emotion = input_sentence.getMainEmotion()
             output_inputmain_emotion = output_sentence.getEmotion(input_main_emotion[0])
             if input_main_emotion[0] == output_inputmain_emotion[0] and output_inputmain_emotion[1] > input_main_emotion[1]:
-                print("\tSuccessfully made input main emotion {} more intense".format(input_main_emotion[0]))
+                # print("\tSuccessfully made input main emotion {} more intense".format(input_main_emotion[0]))
+                return 1
             else:
-                print("\tDid not make input main emotion {} less intense".format(input_main_emotion[0]))
+                # print("\tDid not make input main emotion {} less intense".format(input_main_emotion[0]))
+                return 0
 
         if adjustment_type == AdjustmentType.LESS_INTENSE_MAIN:
             input_main_emotion = input_sentence.getMainEmotion()
             output_inputmain_emotion = output_sentence.getEmotion(input_main_emotion[0])
             if input_main_emotion[0] == output_inputmain_emotion[0] and output_inputmain_emotion[1] < input_main_emotion[1]:
-                print("\tSuccessfully made input main emotion {} less intense".format(input_main_emotion[0]))
+                # print("\tSuccessfully made input main emotion {} less intense".format(input_main_emotion[0]))
+                return 1
             else:
-                print("\tDid not make input main emotion {} less intense".format(input_main_emotion[0]))
+                # print("\tDid not make input main emotion {} less intense".format(input_main_emotion[0]))
+                return 0
 
 
 def main(args):
@@ -145,34 +150,42 @@ def main(args):
     progress = Progress(len(input_sentences), enabled=FeatureFlags().progress)
     detection_validator = TestDetection(len(input_sentences), enabled=FeatureFlags().test_detection_accuracy)
     adjustment_validator = AdjustmentValidator()
+    transformer = Transformer()
     grammar_tool = GrammarCheck(enabled=FeatureFlags().check_grammar)
 
     if not args:
+
+        test_results = {"more_intense":{"total":0, "correct":0},"less_intense":{"total":0, "correct":0}}
         for input_sentence in input_sentences:
             progress.print_progress()
 
-            print("Input Sentence: {}".format(input_sentence.text))
+            # print("Input Sentence: {}".format(input_sentence.text))
             grammar_tool.check(input_sentence.text)
 
             input_sentence_a = analyse(input_sentence.text)
-            print("\tScore: {}".format(input_sentence_a.getRoundedEmotions()))
+            # print("\tScore: {}".format(input_sentence_a.getRoundedEmotions()))
             detection_validator.validate(input_sentence, input_sentence_a)
 
-            more_intense_sentence = intensify(input_sentence_a)
+            more_intense_sentence =  transformer.intensify(input_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
             more_intense_sentence_a = analyse(more_intense_sentence)
-            print("Intensified Sentence: {}".format(more_intense_sentence))
-            print("\tScore: {}".format(more_intense_sentence_a.getRoundedEmotions()))
-            adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
+            # print("Intensified Sentence: {}".format(more_intense_sentence))
+            # print("\tScore: {}".format(more_intense_sentence_a.getRoundedEmotions()))
+            test_result = adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
+            test_results["more_intense"]["total"] += 1
+            test_results["more_intense"]["correct"] += test_result
             grammar_tool.check(more_intense_sentence)
 
-            less_intense_sentence = lessen(input_sentence_a)
+            less_intense_sentence = transformer.intensify(input_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
             less_intense_sentence_a = analyse(less_intense_sentence)
-            print("Less-Intensified Sentence: {}".format(less_intense_sentence))
-            print("\tScore: {}".format(less_intense_sentence_a.getRoundedEmotions()))
-            adjustment_validator.validate(input_sentence_a, less_intense_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
+            # print("Less-Intensified Sentence: {}".format(less_intense_sentence))
+            # print("\tScore: {}".format(less_intense_sentence_a.getRoundedEmotions()))
+            test_result = adjustment_validator.validate(input_sentence_a, less_intense_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
+            test_results["less_intense"]["total"] += 1
+            test_results["less_intense"]["correct"] += test_result
             grammar_tool.check(less_intense_sentence)
 
         detection_validator.print_results()
+        print(test_results)
 
     else:
         input = args[0]
@@ -182,15 +195,6 @@ def main(args):
         analysed_sentence = analyse(preprocessed_input)
         intensified_sentence = intensify(analysed_sentence)
         print("Output: {}".format(intensified_sentence))
-
-
-def intensify(input):
-    transformer = Transformer()
-    return transformer.intensify(input, "more")
-
-def lessen(input):
-    transformer = Transformer()
-    return transformer.intensify(input, "less")
 
 def loadIntensityLexicon(source):
     intensity_lexicon = []
@@ -290,9 +294,9 @@ class Transformer:
         replacements = {}
         contributingWords = self.getContributingWords(sentence)
         for word in contributingWords:
-            if direction == "more":
+            if direction == AdjustmentType.MORE_INTENSE_MAIN:
                 replacements[word.word] = self.getMoreIntenseWord(word)
-            if direction == "less":
+            if direction == AdjustmentType.LESS_INTENSE_MAIN:
                 replacements[word.word] = self.getLessIntenseWord(word)
 
         output = self.replace_words(sentence, replacements)
@@ -356,27 +360,26 @@ class Transformer:
                 # get meanings of matching target word
                 matching_wordsets = self.get_wordsets(matching_word[0], source_word.pos)
                 # cycle through meanings of matching target word
-                synonyms = []
                 for matching_wordset in matching_wordsets:
-                    # for l in matching_wordset.lemmas():
-                    #     synonyms.append(l.name())
-                    name = matching_wordset.lemmas()[0].name()
-                    # if the synonym is found in the lexicon
-                    if name == matching_word[0]:
-                        # check the similarty to original word
-                        similarity = source_wordset.wup_similarity(matching_wordset)
-                        # if it is the current highest similarity store its name and similarity
-                        if similarity and similarity > highest_score:
-                            highest_score = similarity
-                            best_match = name
+                    for l in matching_wordset.lemmas(): #
+                        name = l.name()
+                        # name = matching_wordset.lemmas()[0].name()
+                        # if the synonym is found in the lexicon
+                        if name == matching_word[0]:
+                            # check the similarty to original word
+                            similarity = source_wordset.wup_similarity(matching_wordset)
+                            # if it is the current highest similarity store its name and similarity
+                            if similarity and similarity > highest_score:
+                                highest_score = similarity
+                                best_match = name
 
         if best_match != "":
             dbprint("found best match {} with score {}".format(best_match, highest_score))
             return best_match
-        if matching_words:
-            replacement_word = random.choice(matching_words)
-            dbprint("found replacement word {}".format(replacement_word))
-            return replacement_word[0]
+        # if matching_words:
+        #     replacement_word = random.choice(matching_words)
+        #     dbprint("found replacement word {}".format(replacement_word))
+        #     return replacement_word[0]
         else:
             dbprint("found no replacement word")
             return source_word.word
@@ -430,4 +433,6 @@ def dbprint(input):
         print(input)
 
 if __name__ == "__main__":
+    start_time = time.time()
     main(sys.argv[1:])
+    print("--- %s seconds ---" % (time.time() - start_time))
