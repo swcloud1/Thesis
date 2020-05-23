@@ -3,7 +3,6 @@ import sys
 import string
 import nltk
 import time
-import json
 from enum import Enum
 
 from itertools import chain
@@ -24,13 +23,6 @@ class FeatureFlags():
     progress = True
 
 intensity_lexicon = []
-# ekman_emotions = [
-# "anger",
-# "disgust",
-# "fear",
-# "joy",
-# "sadness",
-# "surprise"]
 ekman_emotions = [
 "anger",
 "fear",
@@ -117,10 +109,12 @@ class ValidationSentence():
 class AdjustmentType(Enum):
     MORE_INTENSE_MAIN = 1
     LESS_INTENSE_MAIN = 2
+    MORE_INTENSE_SPECIFIC = 3
+    LESS_INTENSE_SPECIFIC = 4
 
 class AdjustmentValidator():
 
-    def validate(self, input_sentence, output_sentence, adjustment_type):
+    def validate(self, input_sentence, output_sentence, adjustment_type, emotion = None):
         if adjustment_type == AdjustmentType.MORE_INTENSE_MAIN:
             input_main_emotion = input_sentence.getMainEmotion()
             output_inputmain_emotion = output_sentence.getEmotion(input_main_emotion[0])
@@ -141,6 +135,25 @@ class AdjustmentValidator():
                 print("\tDid not make input main emotion {} less intense".format(input_main_emotion[0]))
                 return 0
 
+        if adjustment_type == AdjustmentType.MORE_INTENSE_SPECIFIC:
+            input_emotion = input_sentence.getEmotion(emotion)
+            output_input_emotion = output_sentence.getEmotion(input_emotion[0])
+            if input_emotion[0] == output_input_emotion[0] and output_input_emotion[1] > input_emotion[1]:
+                # print("\tSuccessfully made input emotion {} more intense".format(emotion))
+                return 1
+            else:
+                # print("\tDid not make input emotion {} more intense".format(emotion))
+                return 0
+
+        if adjustment_type == AdjustmentType.LESS_INTENSE_SPECIFIC:
+            input_emotion = input_sentence.getEmotion(emotion)
+            output_input_emotion = output_sentence.getEmotion(input_emotion[0])
+            if input_emotion[0] == output_input_emotion[0] and output_input_emotion[1] < input_emotion[1]:
+                # print("\tSuccessfully made input emotion {} less intense".format(emotion))
+                return 1
+            else:
+                # print("\tDid not make input emotion {} less intense".format(emotion))
+                return 0
 
 def main(args):
     global intensity_lexicon
@@ -175,34 +188,53 @@ def main(args):
         for input_sentence in input_sentences:
             progress.print_progress()
 
-            print("Input Sentence: {}".format(input_sentence.text))
+            # print("Input Sentence: {}".format(input_sentence.text))
             grammar_tool.check(input_sentence.text)
 
             input_sentence_a = analyse(input_sentence.text)
             # print("\tScore: {}".format(input_sentence_a.getRoundedEmotions()))
             detection_validator.validate(input_sentence, input_sentence_a)
 
-            more_intense_sentence =  transformer.intensify(input_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
-            more_intense_sentence_a = analyse(more_intense_sentence)
+            for emotion in ekman_emotions:
+                more_intense_sentence =  transformer.intensify(input_sentence_a, AdjustmentType.MORE_INTENSE_SPECIFIC, emotion)
+                more_intense_sentence_a = analyse(more_intense_sentence)
+                # print("More {} Sentence: {}".format(emotion, more_intense_sentence))
+                # print("\tScore: {}".format(more_intense_sentence_a.getRoundedEmotions()))
+                test_result = adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_SPECIFIC, emotion)
+                if input_sentence_a.emotions[emotion] > 0:
+                    test_results["more_intense"][emotion]["total"] += 1
+                    test_results["more_intense"][emotion]["correct"] += test_result
+
+                less_intense_sentence =  transformer.intensify(input_sentence_a, AdjustmentType.LESS_INTENSE_SPECIFIC, emotion)
+                less_intense_sentence_a = analyse(less_intense_sentence)
+                # print("Less {} Sentence: {}".format(emotion, less_intense_sentence))
+                # print("\tScore: {}".format(less_intense_sentence_a.getRoundedEmotions()))
+                test_result = adjustment_validator.validate(input_sentence_a, less_intense_sentence_a, AdjustmentType.LESS_INTENSE_SPECIFIC, emotion)
+                if input_sentence_a.emotions[emotion] > 0:
+                    test_results["less_intense"][emotion]["total"] += 1
+                    test_results["less_intense"][emotion]["correct"] += test_result
+
+            # more_intense_sentence =  transformer.intensify(input_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
+            # more_intense_sentence_a = analyse(more_intense_sentence)
             # print("Intensified Sentence: {}".format(more_intense_sentence))
             # print("\tScore: {}".format(more_intense_sentence_a.getRoundedEmotions()))
-            test_result = adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
-            test_results["more_intense"]["total"] += 1
-            test_results["more_intense"]["correct"] += test_result
-            test_results["more_intense"][input_sentence.emotion]["total"] += 1
-            test_results["more_intense"][input_sentence.emotion]["correct"] += test_result
-            grammar_tool.check(more_intense_sentence)
+            # test_result = adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
+            # test_results["more_intense"]["total"] += 1
+            # test_results["more_intense"]["correct"] += test_result
+            # test_results["more_intense"][input_sentence.emotion]["total"] += 1
+            # test_results["more_intense"][input_sentence.emotion]["correct"] += test_result
+            # grammar_tool.check(more_intense_sentence)
 
-            less_intense_sentence = transformer.intensify(input_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
-            less_intense_sentence_a = analyse(less_intense_sentence)
+            # less_intense_sentence = transformer.intensify(input_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
+            # less_intense_sentence_a = analyse(less_intense_sentence)
             # print("Less-Intensified Sentence: {}".format(less_intense_sentence))
             # print("\tScore: {}".format(less_intense_sentence_a.getRoundedEmotions()))
-            test_result = adjustment_validator.validate(input_sentence_a, less_intense_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
-            test_results["less_intense"]["total"] += 1
-            test_results["less_intense"]["correct"] += test_result
-            test_results["less_intense"][input_sentence.emotion]["total"] += 1
-            test_results["less_intense"][input_sentence.emotion]["correct"] += test_result
-            grammar_tool.check(less_intense_sentence)
+            # test_result = adjustment_validator.validate(input_sentence_a, less_intense_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
+            # test_results["less_intense"]["total"] += 1
+            # test_results["less_intense"]["correct"] += test_result
+            # test_results["less_intense"][input_sentence.emotion]["total"] += 1
+            # test_results["less_intense"][input_sentence.emotion]["correct"] += test_result
+            # grammar_tool.check(less_intense_sentence)
 
         detection_validator.print_results()
         print("More Intense: {}".format(test_results["more_intense"]))
@@ -268,6 +300,9 @@ class AnalysedWord:
         value = max(self.emotions.values())
         return (emotion,value)
 
+    def getEmotion(self, emotion):
+        return (emotion,self.emotions[emotion])
+
 
 class AnalysedSentence:
 
@@ -329,14 +364,28 @@ class Transformer:
         "RBS":wordnet.ADV
     }
 
-    def intensify(self, sentence, direction):
+    def intensify(self, sentence, direction, emotion=None):
         replacements = {}
-        contributingWords = self.getContributingWords(sentence)
-        for word in contributingWords:
-            if direction == AdjustmentType.MORE_INTENSE_MAIN:
-                replacements[word.word] = self.getMoreIntenseWord(word)
-            if direction == AdjustmentType.LESS_INTENSE_MAIN:
-                replacements[word.word] = self.getLessIntenseWord(word)
+
+        if direction == AdjustmentType.MORE_INTENSE_MAIN:
+            contributingWords = self.getContributingWords(sentence, sentence.getMainEmotion()[0])
+            for word in contributingWords:
+                replacements[word.word] = self.getMoreIntenseMainEmotionWord(word)
+
+        if direction == AdjustmentType.LESS_INTENSE_MAIN:
+            contributingWords = self.getContributingWords(sentence, sentence.getMainEmotion()[0])
+            for word in contributingWords:
+                replacements[word.word] = self.getLessIntenseMainEmotionWord(word)
+
+        if direction == AdjustmentType.MORE_INTENSE_SPECIFIC:
+            contributingWords = self.getContributingWords(sentence, emotion)
+            for word in contributingWords:
+                replacements[word.word] = self.getMoreIntenseSpecificEmotionWord(word, emotion)
+
+        if direction == AdjustmentType.LESS_INTENSE_SPECIFIC:
+            contributingWords = self.getContributingWords(sentence, emotion)
+            for word in contributingWords:
+                replacements[word.word] = self.getLessIntenseSpecificEmotionWord(word, emotion)
 
         output = self.replace_words(sentence, replacements)
         return "{}".format(' '.join(output))
@@ -350,32 +399,43 @@ class Transformer:
                 output.append(word.word)
         return output
 
-    def getContributingWords(self, sentence):
+    def getContributingWords(self, sentence, emotion):
         contributingWords = []
         for word in sentence.words:
             if word.hasEmotion:
-                if word.getMainEmotion()[0] == sentence.getMainEmotion()[0]:
+                if emotion in word.emotions:
                     contributingWords.append(word)
 
         return contributingWords
 
-    def getMoreIntenseWord(self, word):
+    def getMoreIntenseMainEmotionWord(self, word):
         emotion = word.getMainEmotion()
         dbprint("Replacing word {}({}) with emotion {} with a more intense word".format(word.word, word.pos, emotion))
-        # matching_words = [x for x in intensity_lexicon if x[1] == emotion[0] and x[2] > emotion[1] and x[3] == word.pos]
         matching_words = [x[0] for x in intensity_lexicon if x[1] == emotion[0] and x[2] > emotion[1] and x[3] == word.pos]
 
         return self.getMostFittingReplacementWord(word, matching_words)
 
-    def getLessIntenseWord(self, word):
+    def getLessIntenseMainEmotionWord(self, word):
 
         emotion = word.getMainEmotion()
         dbprint("Replacing word {}({}) with emotion {} with a less intense word".format(word.word, word.pos, emotion))
-        # matching_words = [x for x in intensity_lexicon if x[1] == emotion[0] and x[2] < emotion[1] and x[3] == word.pos]
         matching_words = [x[0] for x in intensity_lexicon if x[1] == emotion[0] and x[2] < emotion[1] and x[3] == word.pos]
 
         return self.getMostFittingReplacementWord(word, matching_words)
 
+    def getMoreIntenseSpecificEmotionWord(self, word, emotion):
+        dbprint("Replacing word {}({}) with emotion {} with a more intense word".format(word.word, word.pos, emotion))
+        emotion = word.getEmotion(emotion)
+        matching_words = [x[0] for x in intensity_lexicon if x[1] == emotion[0] and x[2] > emotion[1] and x[3] == word.pos]
+
+        return self.getMostFittingReplacementWord(word, matching_words)
+
+    def getLessIntenseSpecificEmotionWord(self, word, emotion):
+        dbprint("Replacing word {}({}) with emotion {} with a more intense word".format(word.word, word.pos, emotion))
+        emotion = word.getEmotion(emotion)
+        matching_words = [x[0] for x in intensity_lexicon if x[1] == emotion[0] and x[2] < emotion[1] and x[3] == word.pos]
+
+        return self.getMostFittingReplacementWord(word, matching_words)
 
     def synonyms(self, word, pos):
         synonyms = [word]
@@ -416,9 +476,9 @@ class Transformer:
         if matching_similar_words:
             # print("found similar words to {}: {}".format(source_word.word, matching_similar_words))
             return self.getHighestSimilarity(matching_similar_words)[0]
-
-        if matching_words:
-            return random.choice(matching_words)
+        #
+        # if matching_words:
+        #     return random.choice(matching_words)
         else:
             # print("found no similar words, returning source: {}".format(source_word.word))
             return source_word.word
@@ -493,7 +553,7 @@ class Progress():
 
     def print_progress(self):
         if self.enabled:
-            print("\n({}/{}){}".format(self.cur_trial, self.total_trials, "-"*50))
+            # print("\n({}/{}){}".format(self.cur_trial, self.total_trials, "-"*50))
             self.cur_percentage = int(self.cur_trial/self.total_trials*100)
             if (self.cur_percentage % self.increment == 0) and (self.cur_percentage != self.prev_percentage):
                 print("\nCompletion: {}%".format(self.cur_percentage))
