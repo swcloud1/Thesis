@@ -24,11 +24,8 @@ from Tools import Tools
 
 intensity_lexicon = []
 
-
-
 def main(args):
     global intensity_lexicon
-
 
     intensity_lexicon = loadIntensityLexicon('emotionintensitylexicon.txt')
     input_sentences = load_validation_sentences('rulebasedandmlbasedworking.txt', amount = None)
@@ -39,24 +36,6 @@ def main(args):
     grammar_tool = GrammarCheck(enabled=FeatureFlags().check_grammar)
 
     if not args:
-
-        # test_results = {
-        #     "more_intense":{
-        #         "total":0,
-        #         "correct":0,
-        #         "anger":{"total":0, "correct":0},
-        #         "fear":{"total":0, "correct":0},
-        #         "joy":{"total":0, "correct":0},
-        #         "sadness":{"total":0, "correct":0}},
-        #     "less_intense":{
-        #         "total":0,
-        #         "correct":0,
-        #         "anger":{"total":0, "correct":0},
-        #         "fear":{"total":0, "correct":0},
-        #         "joy":{"total":0, "correct":0},
-        #         "sadness":{"total":0, "correct":0}}
-        # }
-
         for input_sentence in input_sentences:
             progress.print_progress()
 
@@ -85,24 +64,18 @@ def main(args):
             """
             Adjustment: Altering Specific Emotion Intensity
             """
-            for emotion in Emotions.values():
-                more_intense_sentence =  transformer.intensify(input_sentence_a, AdjustmentType.MORE_INTENSE_SPECIFIC, emotion)
-                more_intense_sentence_a = analyse(more_intense_sentence)
-                print("More {} Sentence: {}".format(emotion, more_intense_sentence))
-                print("\tScore: {}".format(more_intense_sentence_a.getRoundedEmotions()))
-                test_result = adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_SPECIFIC, emotion)
-            #     if input_sentence_a.emotions[emotion] > 0:
-            #         test_results["more_intense"][emotion]["total"] += 1
-            #         test_results["more_intense"][emotion]["correct"] += test_result
+            # for emotion in Emotions.values():
+            #     more_intense_sentence =  transformer.intensify(input_sentence_a, AdjustmentType.MORE_INTENSE_SPECIFIC, emotion)
+            #     more_intense_sentence_a = analyse(more_intense_sentence)
+            #     print("More {} Sentence: {}".format(emotion, more_intense_sentence))
+            #     print("\tScore: {}".format(more_intense_sentence_a.getRoundedEmotions()))
+            #     adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_SPECIFIC, emotion)
             #
-                less_intense_sentence =  transformer.intensify(input_sentence_a, AdjustmentType.LESS_INTENSE_SPECIFIC, emotion)
-                less_intense_sentence_a = analyse(less_intense_sentence)
-                print("Less {} Sentence: {}".format(emotion, less_intense_sentence))
-                print("\tScore: {}".format(less_intense_sentence_a.getRoundedEmotions()))
-                test_result = adjustment_validator.validate(input_sentence_a, less_intense_sentence_a, AdjustmentType.LESS_INTENSE_SPECIFIC, emotion)
-            #     if input_sentence_a.emotions[emotion] > 0:
-            #         test_results["less_intense"][emotion]["total"] += 1
-            #         test_results["less_intense"][emotion]["correct"] += test_result
+            #     less_intense_sentence =  transformer.intensify(input_sentence_a, AdjustmentType.LESS_INTENSE_SPECIFIC, emotion)
+            #     less_intense_sentence_a = analyse(less_intense_sentence)
+            #     print("Less {} Sentence: {}".format(emotion, less_intense_sentence))
+            #     print("\tScore: {}".format(less_intense_sentence_a.getRoundedEmotions()))
+            #     adjustment_validator.validate(input_sentence_a, less_intense_sentence_a, AdjustmentType.LESS_INTENSE_SPECIFIC, emotion)
 
             """
             Adjustment: Altering Main Emotion Intensity
@@ -111,14 +84,14 @@ def main(args):
             # more_intense_sentence_a = analyse(more_intense_sentence)
             # print("Intensified Sentence: {}".format(more_intense_sentence))
             # print("\tScore: {}".format(more_intense_sentence_a.getRoundedEmotions()))
-            # test_result = adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
+            # adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
             # grammar_tool.check(more_intense_sentence)
 
             # less_intense_sentence = transformer.intensify(input_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
             # less_intense_sentence_a = analyse(less_intense_sentence)
             # print("Less-Intensified Sentence: {}".format(less_intense_sentence))
             # print("\tScore: {}".format(less_intense_sentence_a.getRoundedEmotions()))
-            # test_result = adjustment_validator.validate(input_sentence_a, less_intense_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
+            # adjustment_validator.validate(input_sentence_a, less_intense_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
             # grammar_tool.check(less_intense_sentence)
 
         detection_validator.print_results()

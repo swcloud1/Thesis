@@ -1,7 +1,12 @@
-from nltk.corpus import wordnet
-from AdjustmentType import AdjustmentType
-from Tools import Tools
 import random
+
+from nltk.corpus import wordnet
+
+from Tools import Tools
+from AdjustmentType import AdjustmentType
+from FeatureFlags import FeatureFlags
+
+
 class Transformer:
 
     posdict = {
@@ -137,31 +142,40 @@ class Transformer:
         return vars
 
     def getMostFittingReplacementWord(self, source_word, matching_words):
-        matching_similar_words = {}
-        # source_word_synsets = self.get_wordsets(source_word.word, source_word.pos)
-        # for source_word_synset in source_word_synsets:
-        #     source_word_synset_vars = self.getLemmas(source_word_synset)
-        #     for source_word_synset_var in source_word_synset_vars:
-        #         source_word_synset_var_synsets = self.get_wordsets(source_word_synset_var, source_word.pos)
-        #         for source_word_synset_var_synset in source_word_synset_var_synsets:
-        #             source_word_synset_var_synset_vars = self.getLemmas(source_word_synset_var_synset)
-        #             for source_word_synset_var_synset_var in source_word_synset_var_synset_vars:
-        #                 for matching_word in matching_words:
-        #                     if source_word_synset_var_synset_var in self.synonyms(matching_word, source_word.pos):
-        #                         similarity = source_word_synset.wup_similarity(source_word_synset_var_synset)
-        #                         if similarity and source_word_synset_var_synset_var != source_word.word:
-        #                             matching_similar_words[matching_word] = similarity
-        #
-        # if matching_similar_words:
-        #     # print("found similar words to {}: {}".format(source_word.word, matching_similar_words))
-        #     return self.getHighestSimilarity(matching_similar_words)[0]
 
-        if matching_words:
-            return random.choice(matching_words)
+        if FeatureFlags().adjustment_focus == AdjustmentType.FOCUS_SR:
+            matching_similar_words = {}
+            source_word_synsets = self.get_wordsets(source_word.word, source_word.pos)
+            for source_word_synset in source_word_synsets:
+                source_word_synset_vars = self.getLemmas(source_word_synset)
+                for source_word_synset_var in source_word_synset_vars:
+                    source_word_synset_var_synsets = self.get_wordsets(source_word_synset_var, source_word.pos)
+                    for source_word_synset_var_synset in source_word_synset_var_synsets:
+                        source_word_synset_var_synset_vars = self.getLemmas(source_word_synset_var_synset)
+                        for source_word_synset_var_synset_var in source_word_synset_var_synset_vars:
+                            for matching_word in matching_words:
+                                if source_word_synset_var_synset_var in self.synonyms(matching_word, source_word.pos):
+                                    similarity = source_word_synset.wup_similarity(source_word_synset_var_synset)
+                                    if similarity and source_word_synset_var_synset_var != source_word.word:
+                                        matching_similar_words[matching_word] = similarity
 
-        else:
-            # print("found no similar words, returning source: {}".format(source_word.word))
-            return source_word.word
+            if matching_similar_words:
+                Tools().dbprint("found similar words to {}: {}".format(source_word.word, matching_similar_words))
+                return self.getHighestSimilarity(matching_similar_words)[0]
+
+            else:
+                Tools().dbprint("found no similar words, returning source: {}".format(source_word.word))
+                return source_word.word
+
+        if FeatureFlags().adjustment_focus == AdjustmentType.FOCUS_EM:
+            if matching_words:
+                random_matching_word = random.choice(matching_words)
+                Tools().dbprint("found matching word {}, returning source: {}".format(random_matching_word, source_word.word))
+                return random.choice(random_matching_word)
+            else:
+                Tools().dbprint("found no similar words, returning source: {}".format(source_word.word))
+                return source_word.word
+
 
     def getHighestSimilarity(self, matching_similar_words):
         word = max(matching_similar_words, key=matching_similar_words.get)

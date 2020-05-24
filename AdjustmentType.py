@@ -6,3 +6,6 @@ class AdjustmentType(Enum):
     MORE_INTENSE_SPECIFIC = 3
     LESS_INTENSE_SPECIFIC = 4
     REPLACE = 5
+
+    FOCUS_SR = 7
+    FOCUS_EM = 8
