@@ -32,6 +32,10 @@ class AnalysedSentence:
     def getEmotion(self, emotion):
         return (emotion,self.emotions[emotion])
 
+    def hasEmotion(self, emotion):
+        print(self.emotions)
+        return self.emotions[emotion] > 0.0
+
     def getRoundedEmotions(self):
         rounded_emotions = {}
         for emotion in self.emotions:

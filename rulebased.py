@@ -50,16 +50,17 @@ def main(args):
             """
             Adjusting: Replacing Specific Emotion
             """
-            # replaced_sentence =  transformer.replace(input_sentence_a, AdjustmentType.REPLACE, source_emotion="sadness", target_emotion="fear")
-            # replaced_sentence_a = analyse(replaced_sentence)
-            # print("Replaced Sentence: {}".format(replaced_sentence))
-            # print("\tScore: {}".format(replaced_sentence_a.getRoundedEmotions()))
-            # test_result = adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
-            # test_results["more_intense"]["total"] += 1
-            # test_results["more_intense"]["correct"] += test_result
-            # test_results["more_intense"][input_sentence.emotion]["total"] += 1
-            # test_results["more_intense"][input_sentence.emotion]["correct"] += test_result
-            # grammar_tool.check(more_intense_sentence)
+            for source_emotion in Emotions.values():
+                for target_emotion in Emotions.values():
+                    if source_emotion != target_emotion and input_sentence_a.emotions[source_emotion] > 0:
+                        replaced_sentence =  transformer.replace(input_sentence_a, AdjustmentType.REPLACE, source_emotion=source_emotion, target_emotion=target_emotion)
+                        replaced_sentence_a = analyse(replaced_sentence)
+                        print("Replacing {} with {}".format(source_emotion, target_emotion))
+                        print("Replaced Sentence: {}".format(replaced_sentence))
+                        print("\tScore: {}".format(replaced_sentence_a.getRoundedEmotions()))
+                        adjustment_validator.validate_replace(input_sentence_a, replaced_sentence_a, source_emotion, target_emotion)
+                # test_result = adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
+                # grammar_tool.check(more_intense_sentence)
 
             """
             Adjustment: Altering Specific Emotion Intensity
@@ -95,8 +96,9 @@ def main(args):
             # grammar_tool.check(less_intense_sentence)
 
         detection_validator.print_results()
-        print("More Intense: {}".format(adjustment_validator.intensity_test_results["more_intense"]))
-        print("Less Intense: {}".format(adjustment_validator.intensity_test_results["less_intense"]))
+        adjustment_validator.print_validate_replace_results()
+        # print("More Intense: {}".format(adjustment_validator.intensity_test_results["more_intense"]))
+        # print("Less Intense: {}".format(adjustment_validator.intensity_test_results["less_intense"]))
 
     else:
         input = args[0]

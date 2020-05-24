@@ -1,4 +1,5 @@
 from AdjustmentType import AdjustmentType
+from Emotions import Emotions
 
 class AdjustmentValidator():
 
@@ -19,6 +20,35 @@ class AdjustmentValidator():
                 "joy":{"total":0, "correct":0},
                 "sadness":{"total":0, "correct":0}}
         }
+
+        self.replace_test_results = {
+            "total" : 0,
+            "correct" : 0,
+            "anger": {"total":0, "anger":0, "fear":0, "joy":0, "sadness":0},
+            "fear": {"total":0, "anger":0, "fear":0, "joy":0, "sadness":0},
+            "joy": {"total":0, "anger":0, "fear":0, "joy":0, "sadness":0},
+            "sadness": {"total":0, "anger":0, "fear":0, "joy":0, "sadness":0}
+        }
+
+    def print_validate_replace_results(self):
+        print("Total Trials: {}".format(self.replace_test_results["total"]))
+        print("Correct Trials: {} = {}%".format(self.replace_test_results["correct"], self.replace_test_results["correct"] / self.replace_test_results["total"] * 100))
+        for emotion in Emotions.values():
+            print("Total {}: {}".format(emotion, self.replace_test_results[emotion]))
+
+    def validate_replace(self, input_sentence, output_sentence, source_emotion, target_emotion):
+        self.replace_test_results["total"] += 1
+        self.replace_test_results[source_emotion]["total"] += 1
+        output_source = output_sentence.emotions[source_emotion]
+        output_target = output_sentence.emotions[target_emotion]
+        input_target = input_sentence.emotions[target_emotion]
+        if output_source == 0 and output_target > input_target:
+            print("\tSucces")
+            self.replace_test_results["correct"] += 1
+            self.replace_test_results[source_emotion][target_emotion] += 1
+        else:
+            print("\tFailed")
+
 
     def validate(self, input_sentence, output_sentence, adjustment_type, emotion = None):
         if adjustment_type == AdjustmentType.MORE_INTENSE_MAIN:

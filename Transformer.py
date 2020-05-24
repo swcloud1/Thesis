@@ -36,7 +36,9 @@ class Transformer:
         if adjustment_type == AdjustmentType.MORE_INTENSE_MAIN:
             contributingWords = self.getContributingWords(sentence, sentence.getMainEmotion()[0])
             for word in contributingWords:
-                replacements[word.word] = self.getMoreIntenseMainEmotionWord(word)
+                replacementword = self.getMoreIntenseMainEmotionWord(word)
+                replacements[word.word] = replacementword
+                # replacements[word.word] = self.getMoreIntenseMainEmotionWord(word)
 
         if adjustment_type == AdjustmentType.LESS_INTENSE_MAIN:
             contributingWords = self.getContributingWords(sentence, sentence.getMainEmotion()[0])
@@ -170,8 +172,8 @@ class Transformer:
         if FeatureFlags().adjustment_focus == AdjustmentType.FOCUS_EM:
             if matching_words:
                 random_matching_word = random.choice(matching_words)
-                Tools().dbprint("found matching word {}, returning source: {}".format(random_matching_word, source_word.word))
-                return random.choice(random_matching_word)
+                Tools().dbprint("found matching word {} to source: {}".format(random_matching_word, source_word.word))
+                return random_matching_word
             else:
                 Tools().dbprint("found no similar words, returning source: {}".format(source_word.word))
                 return source_word.word
