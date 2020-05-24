@@ -1,0 +1,8 @@
+from enum import Enum
+
+class AdjustmentType(Enum):
+    MORE_INTENSE_MAIN = 1
+    LESS_INTENSE_MAIN = 2
+    MORE_INTENSE_SPECIFIC = 3
+    LESS_INTENSE_SPECIFIC = 4
+    REPLACE = 5
