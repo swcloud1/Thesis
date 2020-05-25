@@ -46,6 +46,18 @@ def main(args):
             print("\tScore: {}".format(input_sentence_a.getRoundedEmotions()))
             detection_validator.validate(input_sentence, input_sentence_a)
 
+            """
+            Adjustment: Removing Emotion
+            """
+            # for source_emotion in Emotions.values():
+            #     emotion_lower_bound = 0.3
+            #     if input_sentence_a.emotions[source_emotion] > emotion_lower_bound:
+            #         emotion_removed_sentence =  transformer.remove(input_sentence_a, source_emotion, emotion_lower_bound,  AdjustmentType.REMOVE)
+            #         emotion_removed_sentence_a = analyse(emotion_removed_sentence)
+            #         print("Removed {}: {}".format(source_emotion, emotion_removed_sentence))
+            #         print("\tScore: {}".format(emotion_removed_sentence_a.getRoundedEmotions()))
+            #         adjustment_validator.validate_remove(input_sentence_a, emotion_removed_sentence_a, source_emotion, emotion_lower_bound, AdjustmentType.REMOVE)
+            # grammar_tool.check(more_intense_sentence)
 
             """
             Adjusting: Replacing Specific Emotion
@@ -59,8 +71,7 @@ def main(args):
                         print("Replaced Sentence: {}".format(replaced_sentence))
                         print("\tScore: {}".format(replaced_sentence_a.getRoundedEmotions()))
                         adjustment_validator.validate_replace(input_sentence_a, replaced_sentence_a, source_emotion, target_emotion)
-                # test_result = adjustment_validator.validate(input_sentence_a, more_intense_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
-                # grammar_tool.check(more_intense_sentence)
+                        grammar_tool.check(replaced_sentence)
 
             """
             Adjustment: Altering Specific Emotion Intensity
@@ -95,8 +106,9 @@ def main(args):
             # adjustment_validator.validate(input_sentence_a, less_intense_sentence_a, AdjustmentType.LESS_INTENSE_MAIN)
             # grammar_tool.check(less_intense_sentence)
 
-        detection_validator.print_results()
+        # detection_validator.print_results()
         adjustment_validator.print_validate_replace_results()
+        # adjustment_validator.print_validate_remove_results()
         # print("More Intense: {}".format(adjustment_validator.intensity_test_results["more_intense"]))
         # print("Less Intense: {}".format(adjustment_validator.intensity_test_results["less_intense"]))
 

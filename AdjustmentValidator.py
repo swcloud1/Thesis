@@ -30,11 +30,40 @@ class AdjustmentValidator():
             "sadness": {"total":0, "anger":0, "fear":0, "joy":0, "sadness":0}
         }
 
+        self.remove_test_results = {
+            "total" : 0,
+            "correct" : 0,
+            "anger": {"total":0, "correct":0},
+            "fear": {"total":0, "correct":0},
+            "joy": {"total":0, "correct":0},
+            "sadness": {"total":0, "correct":0}
+        }
+
+    def print_validate_remove_results(self):
+        print("Total Trials: {}".format(self.remove_test_results["total"]))
+        print("Correct Trials: {} = {}%".format(self.remove_test_results["correct"], self.remove_test_results["correct"] / self.remove_test_results["total"] * 100))
+        for emotion in Emotions.values():
+            print("Total {}: {}".format(emotion, self.remove_test_results[emotion]["total"]))
+            print("Correct {}: {} = {}%".format(emotion, self.remove_test_results[emotion]["correct"], self.remove_test_results[emotion]["correct"] / self.remove_test_results[emotion]["total"] * 100 ))
+
+
     def print_validate_replace_results(self):
         print("Total Trials: {}".format(self.replace_test_results["total"]))
         print("Correct Trials: {} = {}%".format(self.replace_test_results["correct"], self.replace_test_results["correct"] / self.replace_test_results["total"] * 100))
         for emotion in Emotions.values():
             print("Total {}: {}".format(emotion, self.replace_test_results[emotion]))
+
+
+    def validate_remove(self, input_sentence, output_sentence, source_emotion, emotion_lower_bound, adjustment_type):
+        self.remove_test_results["total"] += 1
+        self.remove_test_results[source_emotion]["total"] += 1
+
+        if output_sentence.emotions[source_emotion] <= emotion_lower_bound:
+            print("\tSucces")
+            self.remove_test_results["correct"] += 1
+            self.remove_test_results[source_emotion]["correct"] += 1
+        else:
+            print("\tFailed")
 
     def validate_replace(self, input_sentence, output_sentence, source_emotion, target_emotion):
         self.replace_test_results["total"] += 1

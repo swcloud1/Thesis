@@ -69,8 +69,24 @@ class Transformer:
         output = self.replace_words(sentence, replacements)
         return "{}".format(' '.join(output))
 
+    def remove(self, sentence, source_emotion, emotion_lower_bound, adjustment_type):
+        replacements = {}
+
+        contributingWords = self.getContributingWords(sentence, source_emotion)
+        for word in contributingWords:
+            replacements[word.word] = self.getNeutralReplacements(word, source_emotion, emotion_lower_bound)
+
+        output = self.replace_words(sentence, replacements)
+        return "{}".format(' '.join(output))
+
+    def getNeutralReplacements(self, word, source_emotion, emotion_lower_bound):
+        print(word.word, word.pos)
+        matching_words = [x[0] for x in self.intensity_lexicon if x[3] == word.pos and x[1] != source_emotion and x[2] <= emotion_lower_bound]
+
+        return self.getMostFittingReplacementWord(word, matching_words)
+
     def getEqualIntensWithDifferentEmotion(self, word, source_emotion, target_emotion):
-        words_with_target = [x[0] for x in self.intensity_lexicon if x[1] == target_emotion]
+        words_with_target = [x[0] for x in self.intensity_lexicon if x[1] == target_emotion and x[3] == word.pos]
         words_with_source = [x[0] for x in self.intensity_lexicon if x[1] == source_emotion]
         matching_words = [x for x in words_with_target if x not in words_with_source]
 
