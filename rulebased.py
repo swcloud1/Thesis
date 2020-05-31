@@ -62,16 +62,16 @@ def main(args):
             """
             Adjusting: Replacing Specific Emotion
             """
-            for source_emotion in Emotions.values():
-                for target_emotion in Emotions.values():
-                    if source_emotion != target_emotion and input_sentence_a.emotions[source_emotion] > 0:
-                        replaced_sentence =  transformer.replace(input_sentence_a, AdjustmentType.REPLACE, source_emotion=source_emotion, target_emotion=target_emotion)
-                        replaced_sentence_a = analyse(replaced_sentence)
-                        print("Replacing {} with {}".format(source_emotion, target_emotion))
-                        print("Replaced Sentence: {}".format(replaced_sentence))
-                        print("\tScore: {}".format(replaced_sentence_a.getRoundedEmotions()))
-                        adjustment_validator.validate_replace(input_sentence_a, replaced_sentence_a, source_emotion, target_emotion)
-                        grammar_tool.check(replaced_sentence)
+            # for source_emotion in Emotions.values():
+            #     for target_emotion in Emotions.values():
+            #         if source_emotion != target_emotion and input_sentence_a.emotions[source_emotion] > 0:
+            #             replaced_sentence =  transformer.replace(input_sentence_a, AdjustmentType.REPLACE, source_emotion=source_emotion, target_emotion=target_emotion)
+            #             replaced_sentence_a = analyse(replaced_sentence)
+            #             print("Replacing {} with {}".format(source_emotion, target_emotion))
+            #             print("Replaced Sentence: {}".format(replaced_sentence))
+            #             print("\tScore: {}".format(replaced_sentence_a.getRoundedEmotions()))
+            #             adjustment_validator.validate_replace(input_sentence_a, replaced_sentence_a, source_emotion, target_emotion)
+            #             grammar_tool.check(replaced_sentence)
 
             """
             Adjustment: Altering Specific Emotion Intensity
@@ -113,13 +113,21 @@ def main(args):
         # print("Less Intense: {}".format(adjustment_validator.intensity_test_results["less_intense"]))
 
     else:
-        input = args[0]
-        print("Input: {}".format(input))
-        preprocessed_input = preprocess(input)
-        print(preprocessed_input)
-        analysed_sentence = analyse(preprocessed_input)
-        intensified_sentence = intensify(analysed_sentence)
-        print("Output: {}".format(intensified_sentence))
+        emotion = ""
+        type = "analyse"
+        nonparamtypes = ["analyse", "moreintensemain", "lessintensemain", "moreintense", "lessintense"]
+        if args[0] in types:
+            type = args[0]
+            input_sentence = args[1:]
+        else:
+            input_sentence = args
+
+
+        print("Input: {}".format(input_sentence))
+        input_sentence_a = analyse(input_sentence)
+        more_intense_sentence = transformer.intensify(input_sentence_a, AdjustmentType.MORE_INTENSE_MAIN)
+        print("Output: {}".format(more_intense_sentence))
+        return {"input": input_sentence, "output":more_intense_sentence}
 
 def loadIntensityLexicon(source):
     intensity_lexicon = []
@@ -177,6 +185,6 @@ def load_validation_sentences(source, amount=-1):
     return [x for x in sentences if x.emotion in Emotions.values()]
 
 if __name__ == "__main__":
-    start_time = time.time()
+    # start_time = time.time()
     main(sys.argv[1:])
-    print("--- %s seconds ---" % (time.time() - start_time))
+    # print("--- %s seconds ---" % (time.time() - start_time))

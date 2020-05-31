@@ -35,6 +35,7 @@ class Transformer:
 
         if adjustment_type == AdjustmentType.MORE_INTENSE_MAIN:
             contributingWords = self.getContributingWords(sentence, sentence.getMainEmotion()[0])
+            print(contributingWords)
             for word in contributingWords:
                 replacementword = self.getMoreIntenseMainEmotionWord(word)
                 replacements[word.word] = replacementword
